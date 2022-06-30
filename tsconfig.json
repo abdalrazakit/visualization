@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "outDir": "./build/",
+    "noImplicitAny": true,
+    "strict": false,
+    "target": "es5",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "resolveJsonModule": true,
+    "lib": ["dom", "dom.iterable"]
+  },
+  "ts-node": {
+    "files": true
+  }
+}
