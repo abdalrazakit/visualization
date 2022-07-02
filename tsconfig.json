@@ -1,14 +1,26 @@
 {
   "compilerOptions": {
     "outDir": "./build/",
-    "noImplicitAny": true,
-    "strict": false,
+    "noImplicitAny": false ,
+    "strict": true,
     "target": "es5",
     "sourceMap": true,
     "esModuleInterop": true,
     "downlevelIteration": true,
     "resolveJsonModule": true,
-    "lib": ["dom", "dom.iterable"]
+    "lib": ["dom", "dom.iterable"],
+    "jsx": "react",
+
+    "allowJs": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    //"noEmit": true,
+
   },
   "ts-node": {
     "files": true
