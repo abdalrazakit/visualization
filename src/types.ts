@@ -4,12 +4,16 @@ export interface NodeData {
   cluster: string;
   x: number;
   y: number;
+  fromTime:number
+  endTime:number
 }
 
 export interface EdgeData {
   start: string;
   end: string;
   label: string;
+  fromTime:number
+  endTime:number
 }
 
 export interface Cluster {
@@ -21,7 +25,7 @@ export interface Cluster {
 
 export interface Dataset {
   nodes: NodeData[];
-  edges: [string, string][];
+  edges: EdgeData[];
   clusters: Cluster[];
 
 }

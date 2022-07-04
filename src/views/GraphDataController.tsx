@@ -1,60 +1,96 @@
 import {useSigma} from "react-sigma-v2";
 import {FC, useEffect} from "react";
-import {keyBy, omit} from "lodash";
+import {constant, filter, keyBy, mapValues, omit} from "lodash";
 import React from "react";
 
-import {Dataset, FiltersState} from "../types";
+import {Dataset, EdgeData, FiltersState, NodeData} from "../types";
+import neo4j from "neo4j-driver";
+import {log} from "util";
+import SpringSupervisor from "graphology-layout-force/worker";
+const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
+    ({dataset, filters, children}) => {
 
-const GraphDataController: FC<{ dataset: Dataset; filters: FiltersState }> = ({dataset, filters, children}) => {
-    const sigma = useSigma();
-    const graph = sigma.getGraph();
+        const sigma = useSigma();
+        const graph = sigma.getGraph();
+        // const layout = new SpringSupervisor(graph, {});
+        // layout.start();
 
-     /**
-     * Feed graphology with the new dataset:
-     */
-    useEffect(() => {
-        if (!graph || !dataset) return;
+        /**
+         * Feed graphology with the new dataset:
+         */
+        // useEffect(() => {
+        //
+        //     if (!graph || !dataset) return;
+        //
+        //     const clusters = keyBy(dataset.clusters, "key");
+        //
+        //     dataset.nodes.forEach((node) => {
+        //         graph.addNode(node.key, {
+        //             size: 5,
+        //             ...node,
+        //             ...omit(clusters[node.cluster], "key"),
+        //             image: `localhost:3000/images/${clusters[node.cluster].image}`,
+        //         });
+        //     });
+        //     dataset.edges.forEach((edge: EdgeData) => graph.addEdge(edge.start, edge.end, {size: 1}));
+        //
+        //
+        //     return () => graph.clear();
+        // }, [graph, dataset]);
 
-        const clusters = keyBy(dataset.clusters, "key");
-
-        dataset.nodes.forEach((node) => {
+        /**
+         * Apply filters to graphology:
+         */
+        useEffect(() => {
             debugger
-            graph.addNode(node.key, {
-                ...node,
-                ...omit(clusters[node.cluster], "key"),
-                image: `localhost:3000/images/${clusters[node.cluster].image}`,
+            const {clusters} = filters;
+            if (!dataset) return;
+            dataset.nodes.forEach((node: NodeData) => {
+                if (clusters[node.cluster])//show
+                {
+                    console.log("nodeCluser" + node.cluster)
+                    if (!graph.nodes().find(value => value == node.key))//if its not on the graph.. add
+                    {
+                        const clusters = keyBy(dataset.clusters, "key");
+
+                        // console.log("notfound")
+                        graph.addNode(node.key,
+                            {
+
+                                size: 5,
+                                ...omit(clusters[node.cluster], "key"),
+                                ...node,
+                            });
+                    }
+
+                    //   console.log("found")
+                } else //hide
+                {
+                    console.log("hidding")
+                    if (graph.nodes().find(value => value == node.key))//if its found on the graph.. delet
+                        graph.dropNode(node.key);
+                    //console.log("mustdetel")
+                }
+            })
+            dataset.edges.forEach((edge: EdgeData) => {
+                if (graph.nodes().find(value => value == edge.start) && graph.nodes().find(value => value == edge.end))
+                    graph.addEdge(edge.start, edge.end, {size: 1})
             });
-        });
-        dataset.edges.forEach(([source, target]) => graph.addEdge(source, target, {size: 1}));
+            // graph.forEachNode((node, {cluster}) =>
+            // {
+            //     if
+            //     console.log(cluster)
+            //     graph.setNodeAttribute(node, "hidden", !clusters[cluster])}
+            // );
+            // graph.forEachNode((node, attributes) => {
+            //     //node: id & att: object
+            //     console.log("node"+node,"att"+ attributes);
+            // });
+            // console.log("clusters:"+clusters);
 
-        // Use degrees as node sizes:
-        const scores = graph.nodes().map((node) => graph.getNodeAttribute(node, "score"));
-        const minDegree = Math.min(...scores);
-        const maxDegree = Math.max(...scores);
-        const MIN_NODE_SIZE = 3;
-        const MAX_NODE_SIZE = 30;
-        graph.forEachNode((node) =>
-            graph.setNodeAttribute(
-                node,
-                "size",
-                5,
-            ),
-        );
+        }, [graph, filters]);
 
-        return () => graph.clear();
-    }, [graph, dataset]);
-
-    /**
-     * Apply filters to graphology:
-     */
-    useEffect(() => {
-        const {clusters} = filters;
-        graph.forEachNode((node, {cluster, tag}) =>
-            graph.setNodeAttribute(node, "hidden", !clusters[cluster]),
-        );
-    }, [graph, filters]);
-
-    return <>{children}</>;
-};
+        return <>{children}</>;
+    };
 
 export default GraphDataController;

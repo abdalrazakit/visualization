@@ -7,7 +7,7 @@ function prettyPercentage(val: number): string {
   return (val * 100).toFixed(1) + "%";
 }
 
-const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
+const GraphTitle: FC<{ filters: FiltersState,graphChanged }> = ({ filters,graphChanged }) => {
   const sigma = useSigma();
   const graph = sigma.getGraph();
 
@@ -16,13 +16,14 @@ const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
     // To ensure the graphology instance has up to data "hidden" values for
     // nodes, we wait for next frame before reindexing. This won't matter in the
     // UX, because of the visible nodes bar width transition.
+
     requestAnimationFrame(() => {
       const index = { nodes: 0, edges: 0 };
       graph.forEachNode((_, { hidden }) => !hidden && index.nodes++);
       graph.forEachEdge((_, _2, _3, _4, source, target) => !source.hidden && !target.hidden && index.edges++);
       setVisibleItems(index);
     });
-  }, [filters]);
+  }, [filters,graphChanged]);
 
   return (
     <div className="graph-title">
