@@ -9,7 +9,7 @@
     "downlevelIteration": true,
     "resolveJsonModule": true,
     "lib": ["dom", "dom.iterable"],
-    "jsx": "react",
+    "jsx": "react-jsx",
 
     "allowJs": true,
     "skipLibCheck": true,
