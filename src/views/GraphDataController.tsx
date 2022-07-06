@@ -42,7 +42,7 @@ const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
          * Apply filters to graphology:
          */
         useEffect(() => {
-            debugger
+
             const {clusters} = filters;
             if (!dataset) return;
             dataset.nodes.forEach((node: NodeData) => {
@@ -57,7 +57,7 @@ const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
                         graph.addNode(node.key,
                             {
 
-                                size: 5,
+
                                 ...omit(clusters[node.cluster], "key"),
                                 ...node,
                             });

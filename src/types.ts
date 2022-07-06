@@ -19,6 +19,7 @@ export interface EdgeData {
 export interface Cluster {
   key: string;
   color: string;
+  size: number;
   clusterLabel: string;
   image: string;
 }

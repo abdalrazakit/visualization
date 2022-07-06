@@ -89,10 +89,10 @@ const MyGraph: FC = () => {
                 <GraphSettingsController hoveredNode={hoveredNode}/>
                 <GraphEventsController setHoveredNode={setHoveredNode}/>
                 {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
-                {/*{<GraphDataController dataset={dataset!} filters={filtersState}/>}*/}
+                {<GraphDataController dataset={dataset!} filters={filtersState}/>}
                 {dataset && (
                     <>
-                        <TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>
+                        {/*<TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>*/}
 
                         <div className="contents">
 

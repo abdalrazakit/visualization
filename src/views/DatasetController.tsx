@@ -16,9 +16,9 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
 
             const neo4j = require('neo4j-driver')
 
-            const uri = 'neo4j+s://001bf928.databases.neo4j.io';
+            const uri = 'neo4j+s://5755b0fb.databases.neo4j.io';
             const user = 'neo4j';
-            const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
+            const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
             var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
             var session = driver.session();
             console.log("loading data")
@@ -29,14 +29,31 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                         var i = 0;
                         var dataset: Dataset = {
                             clusters: [
-                                {key: "Keeper", color: "red", clusterLabel: "keeper", image: "keeper"},
-                                {key: "Component", color: "blue", clusterLabel: "component", image: "component"},
-                                {key: "Marketplace", color: "green", clusterLabel: "marketpalce", image: "marketplace"},
+                                {key: "Keeper",size:10, color: "red", clusterLabel: "keeper", image: "keeper"},
+                                {key: "Component",size:8, color: "blue", clusterLabel: "component", image: "component"},
+                                {key: "Marketplace",size:6, color: "green", clusterLabel: "marketpalce", image: "marketplace"},
                                 {
                                     key: "SearchEngine",
                                     color: "yellow",
-                                    clusterLabel: "search engine",
-                                    image: "searchengine"
+                                    clusterLabel: "searchengine",
+                                    image: "searchengine",size:6,
+                                },
+                                {
+                                    key: "ExecutionManager",
+                                    color: "grey",
+                                    clusterLabel: "execution manager",
+                                    image: "executionmanager",size:4,
+                                },
+                                {
+                                    key: "NodeExecutor",
+                                    color: "pink",
+                                    clusterLabel: "node executor",
+                                    image: "nodeexecutor",size:3,
+                                },{
+                                    key: "AssetManager",
+                                    color: "brown",
+                                    clusterLabel: "asset manager",
+                                    image: "assetmanager",size:2,
                                 }],
                             edges: [],
                             nodes: []
@@ -46,7 +63,7 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                             record.forEach((value, key) => {
                                 // if it's a node
                                 if (value && value.hasOwnProperty('labels')) {
-                                    console.log("set a node")
+
                                     if (dataset && !dataset.nodes.find(x => x.key == value.identity.low)) {
                                         dataset.nodes.push({
                                             cluster: value.labels[0],

@@ -55,7 +55,7 @@ const Root: FC = () => {
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
     useEffect(() => {
-            setInterval(() => setStartLoading(i++), 200);
+           // setInterval(() => {setStartLoading(i); i+=1;}, 20000);
     }, [])
 
 
@@ -81,6 +81,7 @@ const Root: FC = () => {
                     <ZoomControl/>
                     <FullScreenControl/>
                     <ForceAtlasControl settings={{settings: {adjustSizes: true}}}/>
+                    <button onClick={()=>setStartLoading(startLoading+1)}></button>
                 </ControlsContainer>
                 <ControlsContainer position={"top-right"}>
                     <SearchControl/>
@@ -89,10 +90,10 @@ const Root: FC = () => {
                 <GraphSettingsController hoveredNode={hoveredNode}/>
                 <GraphEventsController setHoveredNode={setHoveredNode}/>
                 {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
-                {/*{<GraphDataController dataset={dataset!} filters={filtersState}/>}*/}
+                {<GraphDataController dataset={dataset!} filters={filtersState}/>}
                 {dataset && (
                     <>
-                        <TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>
+                        {/*<TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>*/}
 
                         <div className="contents">
 
