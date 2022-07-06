@@ -29,47 +29,59 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                         var i = 0;
                         var dataset: Dataset = {
                             clusters: [
-                                {key: "Keeper",size:10, color: "red", clusterLabel: "keeper", image: "keeper"},
-                                {key: "Component",size:8, color: "blue", clusterLabel: "component", image: "component"},
-                                {key: "Marketplace",size:6, color: "green", clusterLabel: "marketpalce", image: "marketplace"},
+                                {key: "Keeper", size: 15, color: "red", clusterLabel: "keeper", image: "keeper"},
+                                {
+                                    key: "Component",
+                                    size: 20,
+                                    color: "blue",
+                                    clusterLabel: "component",
+                                    image: "component"
+                                },
+                                {
+                                    key: "Marketplace",
+                                    size: 10,
+                                    color: "green",
+                                    clusterLabel: "marketpalce",
+                                    image: "marketplace"
+                                },
                                 {
                                     key: "SearchEngine",
                                     color: "yellow",
                                     clusterLabel: "searchengine",
-                                    image: "searchengine",size:6,
+                                    image: "searchengine", size: 10,
                                 },
                                 {
                                     key: "ExecutionManager",
                                     color: "grey",
                                     clusterLabel: "execution manager",
-                                    image: "executionmanager",size:4,
+                                    image: "executionmanager", size: 5,
                                 },
                                 {
                                     key: "NodeExecutor",
                                     color: "pink",
                                     clusterLabel: "node executor",
-                                    image: "nodeexecutor",size:3,
-                                },{
+                                    image: "nodeexecutor", size: 5,
+                                }, {
                                     key: "AssetManager",
                                     color: "brown",
                                     clusterLabel: "asset manager",
-                                    image: "assetmanager",size:2,
+                                    image: "assetmanager", size: 5,
                                 }],
                             edges: [],
                             nodes: []
                         };
+                        i = 1;
                         result.records.forEach(record => {
                             // for each column
                             record.forEach((value, key) => {
                                 // if it's a node
                                 if (value && value.hasOwnProperty('labels')) {
-
                                     if (dataset && !dataset.nodes.find(x => x.key == value.identity.low)) {
                                         dataset.nodes.push({
                                             cluster: value.labels[0],
                                             label: value.properties.name,
-                                            x: Math.random() * 1000,
-                                            y: Math.random() * 1000,
+                                            x: Math.random(),
+                                            y: Math.random(),
                                             key: value.identity.low,
                                             fromTime: value.properties.from,
                                             endTime: value.properties.end
@@ -88,11 +100,20 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                                 }
                             });
                         })
+                        // dataset.nodes.forEach((node) => {
+                        //     var nephore = dataset.edges.filter((value) => {
+                        //         node.key == value.start
+                        //
+                        //     })
+                        //
+                        //
+                        //
+                        // })
                         setDataset(dataset);
                         setFiltersState({
                             clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
                         });
-                       // requestAnimationFrame(() => setDataReady(true));
+                        // requestAnimationFrame(() => setDataReady(true));
                     })
                 await session.close();
                 //const renderer = new Sigma(graph, container);

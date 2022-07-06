@@ -1,7 +1,7 @@
 {
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-scripts start ",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -15,8 +15,10 @@
     "chroma-js": "^2.1.2",
     "fontawesome": "^5.6.3",
     "graphology": "^0.23.2",
+    "graphology-layout": "^0.6.0",
     "graphology-layout-force": "0.2.2",
     "graphology-layout-forceatlas2": "^0.8.1",
+    "graphology-layout-noverlap": "^0.4.2",
     "graphology-types": "^0.23.0",
     "lodash": "^4.17.21",
     "neo4j-driver": "^4.4.6",

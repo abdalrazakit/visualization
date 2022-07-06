@@ -63,9 +63,9 @@ const TimeLineController: FC<{ dataset: Dataset, startLoading: number, setGraphC
                        {
                        let s= graph.addNode(node.key,
                             {
-
                                 ...omit(clusters[node.cluster], "key"),
                                 ...node,
+                                image: `${process.env.PUBLIC_URL}/images/${clusters[node.cluster].image}`,
                             });
                         console.log('added'+s)
                        }

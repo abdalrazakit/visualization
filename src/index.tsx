@@ -16,8 +16,7 @@ export default function App() {
                     <Route index element={<Home />} />
                     <Route path="Graph" element={<Graph />} />
                     <Route path="Generate" element={<Generate />} />
-                    <Route path="*" element={<NoPage />} />
-                </Route>
+                 </Route>
             </Routes>
         </BrowserRouter>
     );

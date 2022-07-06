@@ -47,7 +47,7 @@ const MyGraph: FC = () => {
 
     //const [showContents, setShowContents] = useState(false);
     //const [dataReady, setDataReady] = useState(false);
-    const [startLoading, setStartLoading] = useState( 0);
+    const [startLoading, setStartLoading] = useState(0);
     const [dataset, setDataset] = useState<Dataset | null>(null);
     const [filtersState, setFiltersState] = useState<FiltersState>({
         clusters: {},
@@ -60,7 +60,7 @@ const MyGraph: FC = () => {
 
 
     return (
-        <div id="app-root" className={ "show-contents"}>
+        <div id="app-root" className={"show-contents"}>
             <SigmaContainer
                 graphOptions={{type: "directed", multi: true}}
                 initialSettings={{
@@ -80,18 +80,35 @@ const MyGraph: FC = () => {
                 <ControlsContainer position={"bottom-left"}>
                     <ZoomControl/>
                     <FullScreenControl/>
-                    <ForceAtlasControl settings={{settings: {adjustSizes: true}}}/>
+                    <ForceAtlasControl
+                        settings={
+                            {
+
+                                settings: {
+                                    adjustSizes: false,
+                                    //barnesHutOptimize:true,
+                                    //barnesHutTheta:0.001,
+                                    //edgeWeightInfluence:10,
+                                 //   gravity: 0.5,
+                                    //linLogMode: true,
+                                    //outboundAttractionDistribution : true,
+                                    //strongGravityMode : true,
+                                    //slowDown:10,
+                                //    scalingRatio: 0.01
+                                }
+                            }}/>
                 </ControlsContainer>
                 <ControlsContainer position={"top-right"}>
                     <SearchControl/>
                 </ControlsContainer>
 
-                <GraphSettingsController hoveredNode={hoveredNode}/>
-                {!dataset &&<GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>}
                 {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
-                {<GraphDataController dataset={dataset!} filters={filtersState}/>}
+
                 {dataset && (
                     <>
+                        <GraphDataController dataset={dataset!} filters={filtersState}/>
+                        <GraphSettingsController hoveredNode={hoveredNode}/>
+                        <GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>
                         {/*<TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>*/}
 
                         <div className="contents">
