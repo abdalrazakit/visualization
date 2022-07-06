@@ -67,8 +67,6 @@ export class DataBase {
 
     constructor() {
         const neo4j = require('neo4j-driver')
-
-
         const uri = 'neo4j+s://5755b0fb.databases.neo4j.io';
         const user = 'neo4j';
         const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
@@ -77,9 +75,7 @@ export class DataBase {
     }
 
     async getLength_withDeleted(obj) {
-
         let arr = await this.readQuery(obj.getAllQuery_withDeleted());
-
         return arr.records.length;
 
     }

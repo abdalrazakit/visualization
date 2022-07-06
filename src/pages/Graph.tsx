@@ -87,7 +87,7 @@ const MyGraph: FC = () => {
                 </ControlsContainer>
 
                 <GraphSettingsController hoveredNode={hoveredNode}/>
-                <GraphEventsController setHoveredNode={setHoveredNode}/>
+                {!dataset &&<GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>}
                 {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
                 {<GraphDataController dataset={dataset!} filters={filtersState}/>}
                 {dataset && (

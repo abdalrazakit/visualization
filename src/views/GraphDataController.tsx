@@ -12,6 +12,7 @@ const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
 
         const sigma = useSigma();
         const graph = sigma.getGraph();
+
         // const layout = new SpringSupervisor(graph, {});
         // layout.start();
 
@@ -75,7 +76,7 @@ const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
             dataset.edges.forEach((edge: EdgeData) => {
                 if (graph.nodes().find(value => value == edge.start) && graph.nodes().find(value => value == edge.end))
                     graph.addEdge(edge.start, edge.end, {size: 1})
-            });
+            });//todo drop edges
             // graph.forEachNode((node, {cluster}) =>
             // {
             //     if
