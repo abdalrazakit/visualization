@@ -1,6 +1,6 @@
 import {useSigma} from "react-sigma-v2";
 import {FC, useEffect} from "react";
-import {constant, keyBy, mapValues, omit} from "lodash";
+import {constant, keyBy, mapValues, omit, toNumber} from "lodash";
 import React from "react";
 
 import {Dataset} from "../types";
@@ -21,7 +21,6 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
             const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
             var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
             var session = driver.session();
-            console.log("loading data")
             const getData = async () => {
 
                 await driver.session().run("MATCH (n)-[r]->(m) RETURN n,r,m", {})
@@ -29,17 +28,17 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                         var i = 0;
                         var dataset: Dataset = {
                             clusters: [
-                                {key: "Keeper", size: 15, color: "red", clusterLabel: "keeper", image: "keeper"},
                                 {
                                     key: "Component",
-                                    size: 20,
+                                    size: 10,
                                     color: "blue",
                                     clusterLabel: "component",
                                     image: "component"
                                 },
+                                {key: "Keeper", size: 8, color: "red", clusterLabel: "keeper", image: "keeper"},
                                 {
                                     key: "Marketplace",
-                                    size: 10,
+                                    size: 6,
                                     color: "green",
                                     clusterLabel: "marketpalce",
                                     image: "marketplace"
@@ -48,24 +47,25 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                                     key: "SearchEngine",
                                     color: "yellow",
                                     clusterLabel: "searchengine",
-                                    image: "searchengine", size: 10,
+                                    image: "searchengine",
+                                    size: 6
                                 },
                                 {
                                     key: "ExecutionManager",
                                     color: "grey",
                                     clusterLabel: "execution manager",
-                                    image: "executionmanager", size: 5,
+                                    image: "executionmanager", size: 4,
                                 },
                                 {
                                     key: "NodeExecutor",
                                     color: "pink",
                                     clusterLabel: "node executor",
-                                    image: "nodeexecutor", size: 5,
+                                    image: "nodeexecutor", size: 4,
                                 }, {
                                     key: "AssetManager",
                                     color: "brown",
                                     clusterLabel: "asset manager",
-                                    image: "assetmanager", size: 5,
+                                    image: "assetmanager", size: 4,
                                 }],
                             edges: [],
                             nodes: []
@@ -76,12 +76,31 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
                             record.forEach((value, key) => {
                                 // if it's a node
                                 if (value && value.hasOwnProperty('labels')) {
+
+
                                     if (dataset && !dataset.nodes.find(x => x.key == value.identity.low)) {
+                                        var comId = toNumber(value.properties.component.substr(9, 1))
+
+                                        var x = 1;
+                                        var y = 1;
+                                        if (comId % 4 == 0) {
+                                            x = 1;
+                                            y = 1
+                                        } else if (comId % 4 == 1) {
+                                            x = 1;
+                                            y = -1
+                                        } else if (comId % 4 == 2) {
+                                            x = -1;
+                                            y = 1
+                                        } else if (comId % 4 == 3) {
+                                            x = -1;
+                                            y = -1
+                                        }
                                         dataset.nodes.push({
                                             cluster: value.labels[0],
                                             label: value.properties.name,
-                                            x: Math.random(),
-                                            y: Math.random(),
+                                            x: Math.random() * x  + comId  * x ,
+                                            y: Math.random() * y  + comId * y,
                                             key: value.identity.low,
                                             fromTime: value.properties.from,
                                             endTime: value.properties.end

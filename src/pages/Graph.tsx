@@ -7,9 +7,9 @@ import {
     ControlsContainer,
     ForceAtlasControl
 } from "react-sigma-v2";
-import {omit, mapValues, keyBy, constant, templateSettings} from "lodash";
-import Timeline, {calendar} from 'react-interactive-timeline';
+import {omit, mapValues, keyBy, constant, templateSettings, toNumber} from "lodash";
 
+import Timeline, {calendar} from 'react-interactive-timeline';
 
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
@@ -35,6 +35,7 @@ import neo4j from "neo4j-driver";
 import DataSetController from "../views/DatasetController";
 import {ForceAtlasControlProps} from "react-sigma-v2/lib/esm/controls/ForceAtlasControl";
 import TimeLineController from "../views/TimeLineController";
+import RangeSlider from "react-bootstrap-range-slider";
 
 // Retrieve the html document for sigma container
 const container = document.getElementById("sigma-container") as HTMLElement;
@@ -45,18 +46,25 @@ const MyGraph: FC = () => {
 
     const [graphChanged, setGraphChanged] = useState(false);
 
-    //const [showContents, setShowContents] = useState(false);
-    //const [dataReady, setDataReady] = useState(false);
-    const [startLoading, setStartLoading] = useState(0);
+    //const [showContents, setShowContents] = useState<boolean>(false);
+    const [dataReady, setDataReady] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(0);
     const [dataset, setDataset] = useState<Dataset | null>(null);
+    const [timeDataset, setTimesDataset] = useState<any[] | null>(null);
     const [filtersState, setFiltersState] = useState<FiltersState>({
         clusters: {},
     });
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+    var min = timeDataset ? new Date(timeDataset[0][0]).getTime() : 0;
+    var max = timeDataset ? new Date(timeDataset[timeDataset.length - 1][0]).getTime() : 0;
 
     useEffect(() => {
-        setInterval(() => setStartLoading(i++), 200);
-    }, [])
+        if (timeDataset) {
+            min = timeDataset ? new Date(timeDataset[0][0]).getTime() : 0;
+            max = timeDataset ? new Date(timeDataset[timeDataset.length - 1][0]).getTime() : 0;
+            setSelectedDate(new Date(timeDataset[0][0]).getTime())
+        }
+    }, [timeDataset])
 
 
     return (
@@ -77,75 +85,109 @@ const MyGraph: FC = () => {
                 className="react-sigma"
             >
 
-                <ControlsContainer position={"bottom-left"}>
-                    <ZoomControl/>
-                    <FullScreenControl/>
-                    <ForceAtlasControl
-                        settings={
-                            {
-
-                                settings: {
-                                    adjustSizes: false,
-                                    //barnesHutOptimize:true,
-                                    //barnesHutTheta:0.001,
-                                    //edgeWeightInfluence:10,
-                                 //   gravity: 0.5,
-                                    //linLogMode: true,
-                                    //outboundAttractionDistribution : true,
-                                    //strongGravityMode : true,
-                                    //slowDown:10,
-                                //    scalingRatio: 0.01
-                                }
-                            }}/>
-                </ControlsContainer>
-                <ControlsContainer position={"top-right"}>
-                    <SearchControl/>
-                </ControlsContainer>
 
                 {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
 
                 {dataset && (
+
                     <>
-                        <GraphDataController dataset={dataset!} filters={filtersState}/>
+                        {/*<GraphDataController dataset={dataset!} filters={filtersState}/>*/}
+                        <TimeLineController dataset={dataset!} timeDataset={timeDataset}
+                                            setTimesDataset={setTimesDataset!}
+                                            selectedDate={selectedDate} filters={filtersState}
+                                            setFiltersState={setFiltersState}
+                                            setShowContents={setDataReady}/>
                         <GraphSettingsController hoveredNode={hoveredNode}/>
                         <GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>
-                        {/*<TimeLineController dataset={dataset!} startLoading={startLoading}  setGraphChanged={setGraphChanged}/>*/}
 
-                        <div className="contents">
+                        {dataReady && (
+                            <>
+                                <ControlsContainer position={"bottom-left"}>
+                                    <ZoomControl/>
+                                    <FullScreenControl/>
+                                    <ForceAtlasControl
+                                        autoRunFor={1000}
 
+                                        settings={
+                                            {
+                                                settings: {
+                                                    adjustSizes: false,
+                                                    //barnesHutOptimize:true,
+                                                    //barnesHutTheta:0.001,
+                                                    //edgeWeightInfluence:10,
+                                                    //gravity: 0.5,
+                                                    linLogMode: true,
+                                                    //outboundAttractionDistribution : true,
+                                                    strongGravityMode: true,
+                                                    //slowDown: 3,
+                                                    //scalingRatio: 0.1
+                                                }
+                                            }}/>
+                                </ControlsContainer>
+                                <div className="contents">
+                                    <div className={"row"}>
+                                        {dataset &&
+                                            <div className={"timeline"}>
+                                                <RangeSlider
+                                                    disabled={true}
+                                                    min={min}
+                                                    max={max}
+                                                    size={'lg'}
+                                                    step={86400000}
+                                                    tooltip={"on"}
+                                                    tooltipPlacement={"bottom"}
+                                                    tooltipLabel={(numner) => {
+                                                        let custom = {year: "numeric", month: "short", day: "numeric"};
+                                                        return new Date(numner).toLocaleDateString("en-us");
+                                                    }
+                                                    }
+                                                    value={selectedDate}
+                                                    onChange={changeEvent => setSelectedDate(toNumber(changeEvent.target.value))}
+                                                />
+                                            </div>
+                                        }
 
-                            <GraphTitle filters={filtersState} graphChanged={graphChanged}/>
-                            <div className="panels">
-                                <SearchField filters={filtersState}/>
-                                <ClustersPanel
-                                    clusters={dataset!.clusters}
-                                    filters={filtersState}
-                                    setClusters={(clusters) =>
-                                        setFiltersState((filters) => ({
-                                            ...filters,
-                                            clusters,
-                                        }))
-                                    }
-                                    toggleCluster={(cluster) => {
-                                        setFiltersState((filters) => ({
-                                            ...filters,
-                                            clusters: filters.clusters[cluster]
-                                                ? omit(filters.clusters, cluster)
-                                                : {...filters.clusters, [cluster]: true},
-                                        }));
-                                    }}
-                                />
+                                    </div>
 
-                            </div>
-                        </div>
-                        {/*<div>    <Timeline startDate={"2018-09-01"} endDate={"2019-06-30"}>*/}
-                        {/*    <Timeline.Row>*/}
-                        {/*        <Timeline.Event date="2018-12-12" label="My event" />*/}
-                        {/*    </Timeline.Row>*/}
-                        {/*    <Timeline.Row fixedHeight>*/}
-                        {/*        <Timeline.StepLabels />*/}
-                        {/*    </Timeline.Row>*/}
-                        {/*</Timeline></div>*/}
+                                    <div className="panels">
+                                        <GraphTitle filters={filtersState} graphChanged={graphChanged}/>
+                                        <SearchField filters={filtersState}/>
+                                        <ClustersPanel
+                                            clusters={dataset!.clusters}
+                                            filters={filtersState}
+                                            setClusters={(clusters) =>
+                                                setFiltersState((filters) => ({
+                                                    ...filters,
+                                                    clusters,
+                                                }))
+                                            }
+                                            startTimeLine={() => {
+                                                debugger
+                                                if (timeDataset) {
+                                                    var index = timeDataset.findIndex((e) => {
+                                                        return e[0] == selectedDate
+                                                    })
+                                                    if (index != -1 && index + 1 < timeDataset.length)
+                                                        setSelectedDate(new Date(timeDataset[index +1][0]).getTime())
+                                                }
+                                            }}
+                                            stopTimeLine={() => {
+
+                                            }}
+                                            toggleCluster={(cluster) => {
+                                                setFiltersState((filters) => ({
+                                                    ...filters,
+                                                    clusters: filters.clusters[cluster]
+                                                        ? omit(filters.clusters, cluster)
+                                                        : {...filters.clusters, [cluster]: true},
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+
+                                </div>
+                            </>
+                        )}
                     </>
                 )}
             </SigmaContainer>

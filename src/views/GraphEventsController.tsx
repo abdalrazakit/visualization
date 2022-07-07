@@ -29,14 +29,12 @@ const GraphEventsController: FC<{ dataset: Dataset, setHoveredNode: (node: strin
 
         registerEvents({
             doubleClickNode({node}) {
-                console.log(node)
             },
             rightClickNode(e) {
                 if (!isDragging || !draggedNode) return;
 
                 // Get new position of node
                 // const pos = sigma.viewportToGraph(e);
-                console.log(e)
                 // graph.setNodeAttribute(draggedNode, "x", pos.x);
                 // graph.setNodeAttribute(draggedNode, "y", pos.y);
 
@@ -88,17 +86,18 @@ const GraphEventsController: FC<{ dataset: Dataset, setHoveredNode: (node: strin
                 e.preventSigmaDefault();
                 e.original.preventDefault();
                 e.original.stopPropagation();
-                forceAtlas2.assign(graph, {
-                    iterations: 1,
-                    settings: {
-                       // gravity: 0.5,
-                        //linLogMode: true,
+                forceAtlas2.assign(graph, {iterations: 1, settings:{
+                        adjustSizes: false,
+                        //barnesHutOptimize:true,
+                        //barnesHutTheta:0.001,
+                        //edgeWeightInfluence:10,
+                      //  gravity:1,
+                      //  linLogMode: true,
                         //outboundAttractionDistribution : true,
                         //strongGravityMode : true,
-                        //slowDown:10,
-                      //  scalingRatio: 0.01
-                    }
-                });
+                       // slowDown:3,
+                      //  scalingRatio:1
+                    }});
 
             },
             mouseup(e) {

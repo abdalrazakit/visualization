@@ -21,7 +21,6 @@ export class Item {
     }
 
     setGenerated(gene) {
-        console.log('num Of genereted for' + this.name)
         this.generated = gene;
     }
 
@@ -39,12 +38,10 @@ export class Item {
 
     //not deleted
     getAllQuery_withoutDeleted() {
-        console.log('in get all query' + this.name)
         return 'match (obj:' + this.name + ') where obj.end=0 return obj';
     }
 
     getAllQuery_withDeleted() {
-        console.log('in get all query' + this.name)
         return 'match (obj:' + this.name + ')  return obj';
     }
 
@@ -89,7 +86,6 @@ export class DataBase {
     }
     async writeQuery(query, par) {
         this.session = this.driver.session();
-        console.log(par)
         if (par === undefined) {
             await this.session.writeTransaction(async txc => {
 
@@ -151,7 +147,6 @@ export class ComponentManagment {
 
     async deleteCompleteComponent(name, date) {
         let query = 'MATCH (node) Where node.component= "' + name + '" set node.end= $date';
-        console.log("deleting" + name)
         await this.database.writeQuery(query, {date: date.valueOf()});
     }
 
@@ -160,11 +155,9 @@ export class ComponentManagment {
         let components = await this.getAllComponent_withoutDeleted();// NOT DELETED
         let len = components.records.length
 
-        console.log('num of components before delete' + len);
         count = (count > len) ? len : count;
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
-            console.log('rand=' + components.records[rand]._fields[0]['properties'].name)
             await this.deleteCompleteComponent(components.records[rand]._fields[0]['properties'].name, date);
         }
 
@@ -175,8 +168,6 @@ export class ComponentManagment {
         for (let i = 0; i < component.count; i++) {
 
             let compName = component.getNewName();
-            console.log('generate component:' + component)
-            console.log(compName)
 
             await this.database.writeQuery(component.getCreatQuery(), {
                 name: compName,
@@ -184,11 +175,9 @@ export class ComponentManagment {
                 end: 0,
 
             });
-            console.log('added ' + compName)
             for (let k = 0; k < keeper.count; k++)// keepers  for each component
             {
                 let keeperName = keeper.getNewName();
-                console.log(keeperName)
                 await this.database.writeQuery(keeper.getCreatQuery(), {
                     name: keeperName,
                     from: date.valueOf(),
@@ -200,7 +189,6 @@ export class ComponentManagment {
                 for (let m = 0; m < marketPlace.count; m++)// market
                 {
                     let marketName = marketPlace.getNewName();
-                    console.log(marketName);
                     await this.database.writeQuery(marketPlace.getCreatQuery(), {
                         name: marketName,
                         from: date.valueOf(),
@@ -213,7 +201,6 @@ export class ComponentManagment {
                     //generate execution manager
                     for (let e = 0; e < exeManager.count; e++) {
                         let exeManagerName = exeManager.getNewName();
-                        console.log(exeManagerName)
                         await this.database.writeQuery(exeManager.getCreatQuery(), {
                             name: exeManagerName, from: date.valueOf(), end: 0, component: compName
                         })
@@ -223,7 +210,6 @@ export class ComponentManagment {
                         ////// creat nodeExecutor
                         for (let e = 0; e < nodeExecutor.count; e++) {
                             let nodeExecutorName = nodeExecutor.getNewName();
-                            console.log(nodeExecutorName)
                             await this.database.writeQuery(nodeExecutor.getCreatQuery(), {
                                 name: nodeExecutorName, from: date.valueOf(), end: 0, component: compName
                             })
@@ -233,7 +219,6 @@ export class ComponentManagment {
                             ////// creat assetManager
                             for (let e = 0; e < assetManager.count; e++) {
                                 let assetManagerName = assetManager.getNewName();
-                                console.log(assetManagerName)
                                 await this.database.writeQuery(assetManager.getCreatQuery(), {
                                     name: assetManagerName, from: date.valueOf(), end: 0, component: compName
                                 })
@@ -249,7 +234,6 @@ export class ComponentManagment {
                 for (let s = 0; s < searchEngine.count; s++)// 3
                 {
                     let sEngName = searchEngine.getNewName();
-                    console.log(sEngName)
                     await this.database.writeQuery(searchEngine.getCreatQuery(), {
                         name: sEngName, from: date.valueOf(), end: 0, component: compName
                     })
@@ -281,7 +265,6 @@ export class ComponentManagment {
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
         {
             let keeperName = keeper.getNewName();
-            console.log(keeperName)
             await this.database.writeQuery(keeper.getCreatQuery(), {
                 name: keeperName,
                 from: date.valueOf(),
@@ -293,7 +276,6 @@ export class ComponentManagment {
             for (let m = 0; m < marketPlace.count; m++)// market
             {
                 let marketName = marketPlace.getNewName();
-                console.log(marketName);
                 await this.database.writeQuery(marketPlace.getCreatQuery(), {
                     name: marketName,
                     from: date.valueOf(),
@@ -306,7 +288,6 @@ export class ComponentManagment {
                 //generate execution manager
                 for (let e = 0; e < exeManager.count; e++) {
                     let exeManagerName = exeManager.getNewName();
-                    console.log(exeManagerName)
                     await this.database.writeQuery(exeManager.getCreatQuery(), {
                         name: exeManagerName, from: date.valueOf(), end: 0, component: compName
                     })
@@ -316,7 +297,6 @@ export class ComponentManagment {
                     ////// creat nodeExecutor
                     for (let e = 0; e < nodeExecutor.count; e++) {
                         let nodeExecutorName = nodeExecutor.getNewName();
-                        console.log(nodeExecutorName)
                         await this.database.writeQuery(nodeExecutor.getCreatQuery(), {
                             name: nodeExecutorName, from: date.valueOf(), end: 0, component: compName
                         })
@@ -326,7 +306,6 @@ export class ComponentManagment {
                         ////// creat assetManager
                         for (let e = 0; e < assetManager.count; e++) {
                             let assetManagerName = assetManager.getNewName();
-                            console.log(assetManagerName)
                             await this.database.writeQuery(assetManager.getCreatQuery(), {
                                 name: assetManagerName, from: date.valueOf(), end: 0, component: compName
                             })
@@ -342,7 +321,6 @@ export class ComponentManagment {
             for (let s = 0; s < searchEngine.count; s++)// 3
             {
                 let sEngName = searchEngine.getNewName();
-                console.log(sEngName)
                 await this.database.writeQuery(searchEngine.getCreatQuery(), {
                     name: sEngName, from: date.valueOf(), end: 0, component: compName
                 })
@@ -374,7 +352,6 @@ export class ComponentManagment {
             numOfdelete;
         for (let i = 0; i < countToDelete; i++) {
             let rand = Math.round(Math.random() * (len - 1))
-            console.log('rand=' + rand + 'name=' + nodes.records[rand] + 'len=' + len)
             let name = nodes.records[rand]._fields[0]['properties'].name
             await this.database.deleteNode(name, date);
         }
@@ -427,7 +404,6 @@ export async function startGenerate(numOfDays, component, keeper, marketPlace, e
     date.setDate(1)
     numOfDays -= 1;
     let database = new DataBase();
-    console.log('date='+date);
     await component.setGenerated(await database.getLength_withDeleted(component));
     await keeper.setGenerated(await database.getLength_withDeleted (keeper));
     await marketPlace.setGenerated(await database.getLength_withDeleted(marketPlace));
@@ -441,7 +417,6 @@ export async function startGenerate(numOfDays, component, keeper, marketPlace, e
 
     for (let i = numOfDays;  i >= 0;i--) {
         date.setDate(date.getDate() +1 )
-        console.log('date='+date);
         let component2 = (numOfAdd === undefined) ? new Item('Component', component.min / 2, component.max / 2) :
             new Item('Component', numOfAdd);
 
@@ -454,12 +429,10 @@ export async function startGenerate(numOfDays, component, keeper, marketPlace, e
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
-        console.log('date='+date);
         await componentManagment.addRandomNodesForAllComponents(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
     }
     await database.close()
-    console.log('done')
 
 
 };

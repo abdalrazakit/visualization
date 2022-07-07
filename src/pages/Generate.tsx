@@ -20,7 +20,6 @@ function Generate() {
     }
     const doGenerate = async event => {
         setGeneratingState(1);
-        console.log(formData.type + formData.Component_min)
         if (formData.type == 'Random')
         {
             let component = new Item("Component", 1 ,5);
@@ -75,21 +74,20 @@ function Generate() {
 
             <div >
                 <fieldset>
-                    <label>
-                        <p>Select Type</p>
+                    <div>
+                        <label>Select Type: </label>
                         <select name="type" onChange={handleChange} value={formData.type || ''}>
                             <option value=""></option>
                             <option value="Random">Random</option>
                             <option value="Ranges">Ranges</option>
                             <option value="Logicly">Logicly</option>
                         </select>
-                    </label>
+                    </div>
                 </fieldset>
                 {formData.type == 'Ranges' && <fieldset disabled={false}>
                     <div className="input-container">
                         <label>Components: </label>
                     </div>
-
                     <div className="input-container">
                         <label>Min: </label>
                         <input type="number" name="Component_min" onChange={handleChange} step="1"
