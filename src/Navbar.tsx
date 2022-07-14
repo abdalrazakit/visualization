@@ -14,6 +14,9 @@ function Navbar() {
                 <li>
                     <Link to="/Generate">Generate</Link>
                 </li>
+                <li>
+                    <Link to="/Chart">Charts</Link>
+                </li>
             </ul>
         </nav>
     );

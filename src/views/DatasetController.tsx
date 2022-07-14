@@ -16,9 +16,9 @@ const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, set
 
             const neo4j = require('neo4j-driver')
 
-            const uri = 'neo4j+s://5755b0fb.databases.neo4j.io';
+            const uri = 'neo4j+s://001bf928.databases.neo4j.io';
             const user = 'neo4j';
-            const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
+            const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
             var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
             var session = driver.session();
             const getData = async () => {

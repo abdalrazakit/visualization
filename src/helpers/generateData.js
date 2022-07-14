@@ -64,9 +64,9 @@ export class DataBase {
 
     constructor() {
         const neo4j = require('neo4j-driver')
-        const uri = 'neo4j+s://5755b0fb.databases.neo4j.io';
+        const uri = 'neo4j+s://001bf928.databases.neo4j.io';
         const user = 'neo4j';
-        const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
+        const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
         this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
 
     }
@@ -107,7 +107,7 @@ export class DataBase {
     }
 
     async deleteNode(name, date) {
-        let query = 'match (n {name:"' + name + '"} )-[r1{end:0}]->(a) optional match (b)-[r2{end:0}]-> (n) set n.end=' + date.valueOf() + ' ,r1.end=' + date.valueOf() + ',r2.end=' + date.valueOf();
+        let query = 'match (n {name:"' + name + '"} )-[r1{end:0}]->(a) optional match (b)-[r2{end:0}]-> (n {end:0}) set n.end=' + date.valueOf() + ' ,r1.end=' + date.valueOf() + ',r2.end=' + date.valueOf();
         await this.readQuery(query);
 
     }
