@@ -92,39 +92,82 @@ const ChartController: FC<{ setChartData: (any) => void }> =
         //     }
         //     getData();
         // }, [timeLabels]);
-        //
-        //     useEffect(() => {
-        //         var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
-        //         var session = driver.session();
-        //         var fromTime = []
-        //         var endTime = []
-        //         const fillData = async () => {
-        //             fromTime = await driver.session().run('Match (node) with node  order by node.from return collect(DISTINCT node.from) as times')
-        //                 .then((result) => {
-        //                     return result.records[0]._fields[0]
-        //                 });
-        //             console.log(fromTime)
-        //             endTime = await driver.session().run('Match (node) with node  order by node.end where not node.end=0 return collect(DISTINCT node.end) as times')
-        //                 .then((result) => {
-        //
-        //                     return result.records[0]._fields[0];
-        //
-        //                 });
-        //             setTimeLabels(concatArraysUniqueWithSort(fromTime, endTime));
-        //         }
-        //         fillData();
-        //
-        //     }, []);
+
+        /// get time lables
+            useEffect(() => {
+                var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+                var session = driver.session();
+                var fromTime = []
+                var endTime = []
+                const fillData = async () => {
+                    fromTime = await driver.session().run('Match (node) with node  order by node.from return collect(DISTINCT node.from) as times')
+                        .then((result) => {
+                            return result.records[0]._fields[0]
+                        });
+                    console.log(fromTime)
+                    endTime = await driver.session().run('Match (node) with node  order by node.end where not node.end=0 return collect(DISTINCT node.end) as times')
+                        .then((result) => {
+
+                            return result.records[0]._fields[0];
+
+                        });
+                    setTimeLabels(concatArraysUniqueWithSort(fromTime, endTime));
+                }
+                fillData();
+
+            }, []);
 
         async function getDataForTime(time) {
 
             const times = await driver.session().run("match (n) where( (n.from<=" + time + ") and (n.end>" + time + " or n.end=0)) return count(n)")
             return times//.records[0]._fields[0].toNumber();
         }
+        // pie chart
+        // useEffect(() => {
+        //
+        //     var backgroundColor = [
+        //         'rgb(255, 99, 132)',
+        //         'rgb(255, 159, 64)',
+        //         'rgb(255, 205, 86)',
+        //         'rgb(75, 192, 192)',
+        //         'rgb(54, 162, 235)',
+        //         'rgb(153, 102, 255)',
+        //         'rgb(201, 203, 207)'
+        //     ]
+        //     var items = ['Component', 'Marketplace', 'AssetManager', 'ExecutionManager', 'Keeper', 'SearchEngine', 'NodeExecutor']
+        //     var datasets = [{}]
+        //     const getData = async () => {
+        //         console.log('kjfs')
+        //         var datapoints: any = [];
+        //         for (let item = 0; item < items.length; item++) {
+        //
+        //             const dataForTime = await driver.session().run("match (n:" + items[item] + ") where( n.end=0) return count(n)")
+        //                 .then((result) => {
+        //                     console.log('result' + result.records[0]._fields[0].toNumber())
+        //                     datapoints.push(result.records[0]._fields[0].toNumber());
+        //                 })
+        //
+        //
+        //         }
+        //         console.log(datapoints)
+        //         setChartData({
+        //             labels: items,
+        //             datasets:
+        //                 [{
+        //                     data:datapoints,
+        //                     borderColor: backgroundColor,
+        //                     backgroundColor: backgroundColor,
+        //                 }],
+        //             hoverOffset: 4
+        //         });
+        //         await session.close();
+        //         await driver.close()
+        //     }
+        //     getData();
+        // },[]);
 
         useEffect(() => {
-
-            var backgroundColor = [
+            var backgroundColor=  [
                 'rgb(255, 99, 132)',
                 'rgb(255, 159, 64)',
                 'rgb(255, 205, 86)',
@@ -133,37 +176,53 @@ const ChartController: FC<{ setChartData: (any) => void }> =
                 'rgb(153, 102, 255)',
                 'rgb(201, 203, 207)'
             ]
-            var items = ['Component', 'Marketplace', 'AssetManager', 'ExecutionManager', 'Keeper', 'SearchEngine', 'NodeExecutor']
+
             var datasets = [{}]
             const getData = async () => {
-                console.log('kjfs')
-                var datapoints: any = [];
-                for (let item = 0; item < items.length; item++) {
+                if (timeLabels == null) return
 
-                    const dataForTime = await driver.session().run("match (n:" + items[item] + ") where( n.end=0) return count(n)")
-                        .then((result) => {
-                            console.log('result' + result.records[0]._fields[0].toNumber())
-                            datapoints.push(result.records[0]._fields[0].toNumber());
-                        })
+                    var datapointsADD: any = [];
+                    var datapointsDELETE: any = [];
+                    for (let i = 0; i < timeLabels.length; i++) {
+                        var time = timeLabels[i];
+                        const dataForTime = await driver.session().run(
+                            "match (node{end:"+time+"}) return {label:'delete', count: count(node)} as info UNION ALL " +
+                            "match (node{from:"+time+"}) return {label:'add', count: count(node)} as info")
+                            .then((result) => {
+                                console.log('result' + result.records[0]._fields[0]['count'].low)
+                                datapointsDELETE.push(result.records[0]._fields[0]['count'].low*-1);
+                                datapointsADD.push(result.records[1]._fields[0]['count'].low);
 
 
-                }
-                console.log(datapoints)
+                            })
+                    }
+                    datasets.push({
+                        label: ['Deleted'],
+                        data: datapointsDELETE,
+                        borderColor:backgroundColor[0],
+                        backgroundColor:backgroundColor[0]
+
+                    })
+                datasets.push({
+                    label: ['Added'],
+                    data: datapointsADD,
+                    borderColor:backgroundColor[1],
+                    backgroundColor:backgroundColor[1]
+
+                })
                 setChartData({
-                    labels: items,
-                    datasets:
-                        [{
-                            data:datapoints,
-                            borderColor: backgroundColor,
-                            backgroundColor: backgroundColor,
-                        }],
-                    hoverOffset: 100
+                    labels: timeLabels,
+                    datasets: datasets
                 });
+
+
                 await session.close();
+
                 await driver.close()
             }
             getData();
-        },[]);
+        }, [timeLabels]);
+
         return (<div className="App" style={{overflow: 'auto'}}>
         </div>);
     };

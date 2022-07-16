@@ -12,38 +12,56 @@ function ChartPage() {
             labels: []
     })
     // <block:config:0>
+    //for first and sec chart
+    // const config = {
+    //
+    //         responsive: true,
+    //         plugins: {
+    //             title: {
+    //                 display: true,
+    //                 text: 'Chart.js Line Chart - Cubic interpolation mode'
+    //             },
+    //         },
+    //         interaction: {
+    //             intersect: false,
+    //         },
+    //         scales: {
+    //             x: {
+    //                 display: true,
+    //                 title: {
+    //                     display: true
+    //                 }
+    //
+    //             },
+    //             y: {
+    //                 display: true,
+    //                 title: {
+    //                     display: true,
+    //                     text: 'Value'
+    //                 },
+    //                 suggestedMin: -10,
+    //                 suggestedMax: 200
+    //             }
+    //         }
+    //     ,
+    // };
     const config = {
-
-            responsive: true,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Chart.js Line Chart - Cubic interpolation mode'
+                    text: 'Chart.js Bar Chart - Stacked'
                 },
             },
-            interaction: {
-                intersect: false,
-            },
+            responsive: true,
             scales: {
                 x: {
-                    display: true,
-                    title: {
-                        display: true
-                    }
-
+                    stacked: true,
                 },
                 y: {
-                    display: true,
-                    title: {
-                        display: true,
-                        text: 'Value'
-                    },
-                    suggestedMin: -10,
-                    suggestedMax: 200
+                    stacked: true
                 }
             }
-        ,
-    };
+            };
     return (
         <div style={{overflow: 'scroll'}}>
 
@@ -54,8 +72,14 @@ function ChartPage() {
             {/*    options={config}*/}
 
             {/*/>*/}
+            {/*<Chart*/}
+            {/*    type='doughnut'*/}
+            {/*    data={chartData }*/}
+            {/*    options={config}*/}
+
+            {/*/>*/}
             <Chart
-                type='doughnut'
+                type='bar'
                 data={chartData }
                 options={config}
 
