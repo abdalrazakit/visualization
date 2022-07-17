@@ -9,14 +9,13 @@ import {log} from "util";
 import {notDeepEqual} from "assert";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 
-const TimeLineController: FC<{ dataset: Dataset, filters: FiltersState, selectedDate: number, setFiltersState: (any) => void, setShowContents: (boolean) => void }> =
-    ({dataset, filters, selectedDate, setFiltersState, setShowContents, children}) => {
+const TimeLineController: FC<{ dataset: Dataset, filters: FiltersState, selectedDate: number, setFiltersState: (any) => void}> =
+    ({dataset, filters, selectedDate, setFiltersState, children}) => {
         const sigma = useSigma();
         const graph = sigma.getGraph();
-
+        const previousData = null;
 
         useEffect(() => {
-            console.log("in time line1")
 
             if (!dataset)
                 return;
@@ -24,7 +23,9 @@ const TimeLineController: FC<{ dataset: Dataset, filters: FiltersState, selected
              if (!dataset.nodes[selectedDate])
                 return;
 
-            var previousIndex = selectedDate;
+            if (previousData == null)
+                return;
+
             var MyClusters = keyBy(dataset.clusters, "key");
 
             const x = async () => {
@@ -75,16 +76,10 @@ const TimeLineController: FC<{ dataset: Dataset, filters: FiltersState, selected
             x();
 
             setFiltersState((filters) => ({...filters}));
-            setShowContents(true);
+           // setShowContents(true);
 
         }, [selectedDate]);
 
-        useEffect(() => {
-            const {clusters} = filters;
-            graph.forEachNode((node, {cluster, tag}) =>
-                graph.setNodeAttribute(node, "hidden", !clusters[cluster]),
-            );
-        }, [graph, filters]);
 
         return <>{children}</>;
     }

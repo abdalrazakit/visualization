@@ -28,14 +28,15 @@ function calculateX_Y(comId: number) {
     return {x, y};
 }
 
-const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDataset: (dataset: Dataset | null) => void, setFiltersState: (any) => void, }> =
-    ({timeLabels,filters, setDataset, setFiltersState, children}) => {
+const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDataset: (dataset: Dataset | null) => void, setFiltersState: (boolean) => void,setDataReady:(any)=>void }> =
+    ({timeLabels,filters, setDataset,setDataReady, setFiltersState, children}) => {
         const sigma = useSigma();
         const graph = sigma.getGraph();
 
         const MAXIMUM_UNIQUE_NODES = 10000
         const BUFFER_SIZE = 10000
         let uniqueNodes = []
+
 
         useEffect(() => {
             const neo4j = require('neo4j-driver')
@@ -101,7 +102,6 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
             });
 
             var MyClusters = keyBy(dataset.clusters, "key");
-            const {clusters} = filters;
 
             const getData = async () => {
 
@@ -147,7 +147,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                                 {
                                                                     ...omit(MyClusters[node.cluster], "key"),
                                                                     ...node,
-                                                                    "hidden": !clusters[node.cluster],
+                                                                    "hidden": !filters[node.cluster],
                                                                     image: `${process.env.PUBLIC_URL}/images/${MyClusters[node.cluster].image}`,
                                                                 });
                                                         } catch (e) {
@@ -183,10 +183,15 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                 })
 
                                 setDataset(dataset);
+                               // setShowContents(true);
+                               // setDataReady(true);
+                                setFiltersState((filters) => ({...filters}));
+
 
                             },
                             complete: () => {
                                 console.log('completed', uniqueNodes)
+                                driver.close()
                                 dataset.edges[timeLabels[0]].forEach((edge) => {
                                     if (edge.fromTime == timeLabels[0]) {
                                         try{
@@ -196,6 +201,12 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         }
                                     }
                                 });
+                                setDataset(dataset);
+                               // setShowContents(true);
+                               /// setDataReady(true);
+                                setFiltersState((filters) => ({...filters}));
+
+
                             },
                             error: error => {
                                 console.error(error)
@@ -208,6 +219,10 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
             getData();
 
         }, [timeLabels]);
+
+
+
+
         return <>{children}</>;
     };
 

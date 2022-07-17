@@ -4,7 +4,7 @@ import AnimateHeight from "react-animate-height";
 
 const DURATION = 300;
 
-const Panel: FC<{ title: JSX.Element | string; initiallyDeployed?: boolean }> = ({
+const   Panel: FC<{ title: JSX.Element | string; initiallyDeployed?: boolean }> = ({
   title,
   initiallyDeployed,
   children,

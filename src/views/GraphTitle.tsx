@@ -7,7 +7,7 @@ function prettyPercentage(val: number): string {
   return (val * 100).toFixed(1) + "%";
 }
 
-const GraphTitle: FC<{ filters: FiltersState,graphChanged }> = ({ filters,graphChanged }) => {
+const GraphTitle: FC<{ filters: FiltersState }> = ({ filters }) => {
   const sigma = useSigma();
   const graph = sigma.getGraph();
 
@@ -23,7 +23,7 @@ const GraphTitle: FC<{ filters: FiltersState,graphChanged }> = ({ filters,graphC
       graph.forEachEdge((_, _2, _3, _4, source, target) => !source.hidden && !target.hidden && index.edges++);
       setVisibleItems(index);
     });
-  }, [filters,graphChanged]);
+  }, [filters]);
 
   return (
     <div >

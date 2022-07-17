@@ -33,7 +33,6 @@ const ClustersPanel: FC<{
 
     const [visibleNodesPerCluster, setVisibleNodesPerCluster] = useState<Record<string, number>>(nodesPerCluster);
 
-
     useEffect(() => {
         // To ensure the graphology instance has up to data "hidden" values for
         // nodes, we wait for next frame before reindexing. This won't matter in the
@@ -45,21 +44,16 @@ const ClustersPanel: FC<{
         });
     }, [filters]);
 
+
+
     const sortedClusters = useMemo(
         () => sortBy(clusters, (cluster) => -nodesPerCluster[cluster.key]),
         [clusters, nodesPerCluster],
     );
 
-
-
-
-
     return (
-        <Panel title={<span className="text-muted text-small">{"Control Panel"}</span>}>
-
-
+        <Panel initiallyDeployed title={<span className="text-muted text-small">{"Control Panel"}</span>}>
                     <p >
-
                         <button className="btn"
                                 onClick={() => setClusters(mapValues(keyBy(clusters, "key"), () => true))}>
                             <AiOutlineCheckCircle/> Check all

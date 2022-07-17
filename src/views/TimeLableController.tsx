@@ -17,7 +17,9 @@ const TimeLabelController: FC<{ setTimesLabels: (timeDataSet: any[]) => void, }>
                 await driver.session().run("MATCH (n) return  DISTINCT n.from AS date union MATCH (n) where not n.end=0 return DISTINCT n.end AS date"
                     , {})
                     .then((result) => {
+
                         const newArr = result.records.map((element, index) => {
+                            if (element._fields[0])
                             return element._fields[0].low ? element._fields[0].low : element._fields[0];
                         });
                         newArr.sort((first, second) => first[0] - second[0]);
@@ -29,6 +31,8 @@ const TimeLabelController: FC<{ setTimesLabels: (timeDataSet: any[]) => void, }>
             }
             getData();
         }, []);
+
+
         return <>{children}</>;
     };
 
