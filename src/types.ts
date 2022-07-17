@@ -25,8 +25,8 @@ export interface Cluster {
 }
 
 export interface Dataset {
-  nodes: NodeData[];
-  edges: EdgeData[];
+  nodes: NodeData[][];
+  edges: EdgeData[][];
   clusters: Cluster[];
 
 }

@@ -29,37 +29,37 @@ const GraphDataController: FC<{ dataset: Dataset, filters: FiltersState }> =
          */
         useEffect(() => {
 
-            const {clusters} = filters;
-            if (!dataset) return;
-
-            dataset.nodes.forEach((node: NodeData) => {
-                if (clusters[node.cluster])//show
-                {
-                    if (!graph.nodes().find(value => value == node.key))//if its not on the graph.. add
-                    {
-                        const clusters = keyBy(dataset.clusters, "key");
-                        graph.addNode(node.key,
-                            {
-                                ...node,
-                                ...omit(clusters[node.cluster], "key"),
-                                type: "image",
-                                image: `http://localhost:3000/images/${clusters[node.cluster].image}`,
-                            });
-                    }
-                } else //hide
-                {
-                    if (graph.nodes().find(value => value == node.key))
-                        graph.dropNode(node.key);
-                }
-            })
-            dataset.edges.forEach((edge: EdgeData) => {
-                var node1 = graph.nodes().find(value => value == edge.start);
-                var node2 = graph.nodes().find(value => value == edge.end);
-                if (node1 && node2)
-                {
-                    graph.addEdge(edge.start, edge.end, {size: 2})
-                }
-            });
+            // const {clusters} = filters;
+            // if (!dataset) return;
+            //
+            // dataset.nodes.forEach((node: NodeData) => {
+            //     if (clusters[node.cluster])//show
+            //     {
+            //         if (!graph.nodes().find(value => value == node.key))//if its not on the graph.. add
+            //         {
+            //             const clusters = keyBy(dataset.clusters, "key");
+            //             graph.addNode(node.key,
+            //                 {
+            //                     ...node,
+            //                     ...omit(clusters[node.cluster], "key"),
+            //                     type: "image",
+            //                     image: `http://localhost:3000/images/${clusters[node.cluster].image}`,
+            //                 });
+            //         }
+            //     } else //hide
+            //     {
+            //         if (graph.nodes().find(value => value == node.key))
+            //             graph.dropNode(node.key);
+            //     }
+            // })
+            // dataset.edges.forEach((edge: EdgeData) => {
+            //     var node1 = graph.nodes().find(value => value == edge.start);
+            //     var node2 = graph.nodes().find(value => value == edge.end);
+            //     if (node1 && node2)
+            //     {
+            //         graph.addEdge(edge.start, edge.end, {size: 2})
+            //     }
+            // });
 
             //todo drop edges
 

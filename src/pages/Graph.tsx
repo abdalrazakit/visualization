@@ -36,6 +36,7 @@ import DataSetController from "../views/DatasetController";
 import {ForceAtlasControlProps} from "react-sigma-v2/lib/esm/controls/ForceAtlasControl";
 import TimeLineController from "../views/TimeLineController";
 import RangeSlider from "react-bootstrap-range-slider";
+import TimeLabelController from "../views/TimeLableController";
 
 // Retrieve the html document for sigma container
 const container = document.getElementById("sigma-container") as HTMLElement;
@@ -49,22 +50,22 @@ const MyGraph: FC = () => {
     //const [showContents, setShowContents] = useState<boolean>(false);
     const [dataReady, setDataReady] = useState(false);
     const [selectedDate, setSelectedDate] = useState(0);
+    const [timeLabels, setTimeLabels] = useState<any[] | null>(null);
     const [dataset, setDataset] = useState<Dataset | null>(null);
-    const [timeDataset, setTimesDataset] = useState<any[] | null>(null);
     const [filtersState, setFiltersState] = useState<FiltersState>({
         clusters: {},
     });
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-    var min = timeDataset ? new Date(timeDataset[0][0]).getTime() : 0;
-    var max = timeDataset ? new Date(timeDataset[timeDataset.length - 1][0]).getTime() : 0;
+    var min = 0;
+    var max = 0;
 
     useEffect(() => {
-        if (timeDataset) {
-            min = timeDataset ? new Date(timeDataset[0][0]).getTime() : 0;
-            max = timeDataset ? new Date(timeDataset[timeDataset.length - 1][0]).getTime() : 0;
-            setSelectedDate(new Date(timeDataset[0][0]).getTime())
+        if (timeLabels) {
+            min = timeLabels ? new Date(timeLabels[0]).getTime() : 0;
+            max = timeLabels ? new Date(timeLabels[timeLabels.length - 1]).getTime() : 0;
+          //  setSelectedDate(new Date(timeLabels[0]).getTime())
         }
-    }, [timeDataset])
+    }, [timeLabels])
 
 
     return (
@@ -85,28 +86,30 @@ const MyGraph: FC = () => {
                 className="react-sigma"
             >
 
+                DataSetController
+                {!timeLabels && (<TimeLabelController setTimesLabels={setTimeLabels}/>)}
 
-                {!dataset && (<DataSetController setDataset={setDataset} setFiltersState={setFiltersState}/>)}
+                {timeLabels && !dataset && (<DataSetController timeLabels={timeLabels} setDataset={setDataset}
+                                                               filters={filtersState} setFiltersState={setFiltersState}/>)}
 
                 {dataset && (
 
                     <>
                         {/*<GraphDataController dataset={dataset!} filters={filtersState}/>*/}
-                        <TimeLineController dataset={dataset!} timeDataset={timeDataset}
-                                            setTimesDataset={setTimesDataset!}
-                                            selectedDate={selectedDate} filters={filtersState}
+                        <TimeLineController dataset={dataset!}
+                                            selectedDate={selectedDate}
+                                            filters={filtersState}
                                             setFiltersState={setFiltersState}
                                             setShowContents={setDataReady}/>
-                        <GraphSettingsController hoveredNode={hoveredNode}/>
-                        <GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>
+                        {/*<GraphSettingsController hoveredNode={hoveredNode}/>*/}
+                        {/*<GraphEventsController setHoveredNode={setHoveredNode} dataset={dataset!}/>*/}
 
-                        {dataReady && (
+                        {(
                             <>
                                 <ControlsContainer position={"bottom-left"}>
                                     <ZoomControl/>
                                     <FullScreenControl/>
                                     <ForceAtlasControl
-                                        autoRunFor={1000}
 
                                         settings={
                                             {
@@ -163,12 +166,12 @@ const MyGraph: FC = () => {
                                             }
                                             startTimeLine={() => {
                                                 debugger
-                                                if (timeDataset) {
-                                                    var index = timeDataset.findIndex((e) => {
+                                                if (timeLabels) {
+                                                    var index = timeLabels.findIndex((e) => {
                                                         return e[0] == selectedDate
                                                     })
-                                                    if (index != -1 && index + 1 < timeDataset.length)
-                                                        setSelectedDate(new Date(timeDataset[index +1][0]).getTime())
+                                                    if (index != -1 && index + 1 < timeLabels.length)
+                                                        setSelectedDate(new Date(timeLabels[index + 1]).getTime())
                                                 }
                                             }}
                                             stopTimeLine={() => {

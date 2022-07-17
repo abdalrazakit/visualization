@@ -3,147 +3,212 @@ import {FC, useEffect} from "react";
 import {constant, keyBy, mapValues, omit, toNumber} from "lodash";
 import React from "react";
 
-import {Dataset} from "../types";
+import {Dataset, EdgeData, FiltersState, NodeData} from "../types";
 import neo4j from "neo4j-driver";
+import {Subject} from 'rxjs'
+import {bufferCount, takeUntil} from 'rxjs/operators'
+import {concat, flatten, uniqBy, slice} from 'lodash'
 
-const DataSetController: FC<{ setDataset: (dataset: Dataset | null) => void, setFiltersState: (any) => void }> =
-    ({setDataset, setFiltersState, children}) => {
+function calculateX_Y(comId: number) {
+    var x = 1;
+    var y = 1;
+    if (comId % 4 == 0) {
+        x = 1;
+        y = 1
+    } else if (comId % 4 == 1) {
+        x = 1;
+        y = -1
+    } else if (comId % 4 == 2) {
+        x = -1;
+        y = 1
+    } else if (comId % 4 == 3) {
+        x = -1;
+        y = -1
+    }
+    return {x, y};
+}
+
+const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDataset: (dataset: Dataset | null) => void, setFiltersState: (any) => void, }> =
+    ({timeLabels,filters, setDataset, setFiltersState, children}) => {
         const sigma = useSigma();
         const graph = sigma.getGraph();
 
+        const MAXIMUM_UNIQUE_NODES = 10000
+        const BUFFER_SIZE = 10000
+        let uniqueNodes = []
 
         useEffect(() => {
-
             const neo4j = require('neo4j-driver')
-
-            const uri = 'neo4j+s://5755b0fb.databases.neo4j.io';
+            const uri = 'neo4j+s://58b8eed3.databases.neo4j.io';
             const user = 'neo4j';
-            const password = 'TSR9dRpkY8ZxjhL4GX8TLVaX7UJGdO8ArQo96PwOt5o';
+            const password = 'rr_XdvvmaTyWRb8k_HMBaP7u0F-WGhBLtXsYQx9GmkM';
             var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
-            var session = driver.session();
+
+            var dataset: Dataset = {
+                clusters: [
+                    {
+                        key: "Component",
+                        size: 10,
+                        color: "blue",
+                        clusterLabel: "component",
+                        image: "component"
+                    },
+                    {key: "Keeper", size: 8, color: "red", clusterLabel: "keeper", image: "keeper"},
+                    {
+                        key: "Marketplace",
+                        size: 6,
+                        color: "green",
+                        clusterLabel: "marketpalce",
+                        image: "marketplace"
+                    },
+                    {
+                        key: "SearchEngine",
+                        color: "yellow",
+                        clusterLabel: "searchengine",
+                        image: "searchengine",
+                        size: 6
+                    },
+                    {
+                        key: "ExecutionManager",
+                        color: "grey",
+                        clusterLabel: "execution manager",
+                        image: "executionmanager", size: 4,
+                    },
+                    {
+                        key: "NodeExecutor",
+                        color: "pink",
+                        clusterLabel: "node executor",
+                        image: "nodeexecutor", size: 4,
+                    }, {
+                        key: "AssetManager",
+                        color: "brown",
+                        clusterLabel: "asset manager",
+                        image: "assetmanager", size: 4,
+                    }],
+                edges: [],
+                nodes: []
+            };
+
+            timeLabels.forEach((e) => {
+                if (!dataset.nodes[e]) {
+                    dataset.nodes[e] = [];
+                    dataset.edges[e] = [];
+                }
+            });
+            setFiltersState({
+                clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
+            });
+
+            var MyClusters = keyBy(dataset.clusters, "key");
+            const {clusters} = filters;
+
             const getData = async () => {
 
-                await driver.session().run("MATCH (n)-[r]->(m) RETURN n,r,m", {})
-                    .then((result) => {
-                        var i = 0;
-                        var dataset: Dataset = {
-                            clusters: [
-                                {
-                                    key: "Component",
-                                    size: 10,
-                                    color: "blue",
-                                    clusterLabel: "component",
-                                    image: "component"
-                                },
-                                {key: "Keeper", size: 8, color: "red", clusterLabel: "keeper", image: "keeper"},
-                                {
-                                    key: "Marketplace",
-                                    size: 6,
-                                    color: "green",
-                                    clusterLabel: "marketpalce",
-                                    image: "marketplace"
-                                },
-                                {
-                                    key: "SearchEngine",
-                                    color: "yellow",
-                                    clusterLabel: "searchengine",
-                                    image: "searchengine",
-                                    size: 6
-                                },
-                                {
-                                    key: "ExecutionManager",
-                                    color: "grey",
-                                    clusterLabel: "execution manager",
-                                    image: "executionmanager", size: 4,
-                                },
-                                {
-                                    key: "NodeExecutor",
-                                    color: "pink",
-                                    clusterLabel: "node executor",
-                                    image: "nodeexecutor", size: 4,
-                                }, {
-                                    key: "AssetManager",
-                                    color: "brown",
-                                    clusterLabel: "asset manager",
-                                    image: "assetmanager", size: 4,
-                                }],
-                            edges: [],
-                            nodes: []
-                        };
-                        i = 1;
-                        result.records.forEach(record => {
-                            // for each column
-                            record.forEach((value, key) => {
-                                // if it's a node
-                                if (value && value.hasOwnProperty('labels')) {
+                var query = "MATCH (n)-[r]->(m) RETURN n,r,m";
+                const rxSession = driver.rxSession({database: 'neo4j'})
+                const notifier = new Subject()
+                const emitNotifier = () => {
+                    notifier.next()
+                    notifier.complete()
+                }
 
+                const fetchResultsUsingReactiveDrivers = () =>
+                    rxSession.readTransaction(tx => tx
+                        .run(query, {})
+                        .records()
+                        .pipe(
+                            bufferCount(BUFFER_SIZE),
+                            takeUntil(notifier)
+                        ))
+                        .subscribe({
+                            next: records => {
+                                 records.forEach(record => {
+                                    // for each column
+                                    record.forEach((value, key) => {
+                                        // if it's a node
+                                        if (value && value.hasOwnProperty('labels')) {
+                                            var comId = toNumber(value.properties.component.substr(9, 1))
+                                            var {x, y} = calculateX_Y(comId);
+                                            var node = {
+                                                cluster: value.labels[0],
+                                                label: value.properties.name,
+                                                x: Math.random() * 1000,// * x + comId * x,
+                                                y: Math.random() * 1000 ,// * y + comId * y,
+                                                key: value.identity.low,
+                                                fromTime: value.properties.from,
+                                                endTime: value.properties.end
+                                            };
+                                            if (node.fromTime != node.endTime) {
+                                                if (!dataset.nodes[node.fromTime][node.key]) {
+                                                    if (node.fromTime == timeLabels[0]) {
+                                                        try {
+                                                            graph.addNode(node.key,
+                                                                {
+                                                                    ...omit(MyClusters[node.cluster], "key"),
+                                                                    ...node,
+                                                                    "hidden": !clusters[node.cluster],
+                                                                    image: `${process.env.PUBLIC_URL}/images/${MyClusters[node.cluster].image}`,
+                                                                });
+                                                        } catch (e) {
+                                                            console.log("exx")
+                                                        }
+                                                    }
+                                                    dataset.nodes[node.fromTime][node.key] = node;
+                                                }
+                                                if (node.endTime != 0)
+                                                    dataset.nodes[node.endTime][node.key] = node;
+                                            }
 
-                                    if (dataset && !dataset.nodes.find(x => x.key == value.identity.low)) {
-                                        var comId = toNumber(value.properties.component.substr(9, 1))
-
-                                        var x = 1;
-                                        var y = 1;
-                                        if (comId % 4 == 0) {
-                                            x = 1;
-                                            y = 1
-                                        } else if (comId % 4 == 1) {
-                                            x = 1;
-                                            y = -1
-                                        } else if (comId % 4 == 2) {
-                                            x = -1;
-                                            y = 1
-                                        } else if (comId % 4 == 3) {
-                                            x = -1;
-                                            y = -1
                                         }
-                                        dataset.nodes.push({
-                                            cluster: value.labels[0],
-                                            label: value.properties.name,
-                                            x: Math.random() * x  + comId  * x ,
-                                            y: Math.random() * y  + comId * y,
-                                            key: value.identity.low,
-                                            fromTime: value.properties.from,
-                                            endTime: value.properties.end
-                                        })
+                                        // if it's an edge
+                                        if (value && value.hasOwnProperty('type')) {
+                                            var edge = {
+                                                start: value.start,
+                                                end: value.end,
+                                                label: value.type,
+                                                key: value.identity.low,
+                                                fromTime: value.properties.from,
+                                                endTime: value.properties.end
+                                            };
+                                             if (edge.endTime != edge.fromTime) {
+                                                dataset.edges[edge.fromTime][edge.key]= edge;
+                                                if (edge.endTime != 0)
+                                                    dataset.edges[edge.endTime][edge.key]= edge;
+                                            }
+                                        }
+                                    });
+
+
+                                })
+
+                                setDataset(dataset);
+
+                            },
+                            complete: () => {
+                                console.log('completed', uniqueNodes)
+                                dataset.edges[timeLabels[0]].forEach((edge) => {
+                                    if (edge.fromTime == timeLabels[0]) {
+                                        try{
+                                            graph.addEdge(edge.start, edge.end, {size: 1})
+                                        }catch (e) {
+                                            console.log("exx")
+                                        }
                                     }
-                                }
-                                // if it's an edge
-                                if (value && value.hasOwnProperty('type')) {
-                                    dataset.edges.push({
-                                        start: value.start,
-                                        end: value.end,
-                                        label: value.type,
-                                        fromTime: value.properties.from,
-                                        endTime: value.properties.end
-                                    })
-                                }
-                            });
+                                });
+                            },
+                            error: error => {
+                                console.error(error)
+                            }
                         })
-                        // dataset.nodes.forEach((node) => {
-                        //     var nephore = dataset.edges.filter((value) => {
-                        //         node.key == value.start
-                        //
-                        //     })
-                        //
-                        //
-                        //
-                        // })
-                        setDataset(dataset);
-                        setFiltersState({
-                            clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
-                        });
-                        // requestAnimationFrame(() => setDataReady(true));
-                    })
-                await session.close();
-                //const renderer = new Sigma(graph, container);
-                await driver.close()
+
+
+                fetchResultsUsingReactiveDrivers();
             }
             getData();
 
-        }, []);
+        }, [timeLabels]);
         return <>{children}</>;
     };
-
 
 export default DataSetController;
 

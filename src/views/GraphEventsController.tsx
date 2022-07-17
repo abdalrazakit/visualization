@@ -86,18 +86,7 @@ const GraphEventsController: FC<{ dataset: Dataset, setHoveredNode: (node: strin
                 e.preventSigmaDefault();
                 e.original.preventDefault();
                 e.original.stopPropagation();
-                forceAtlas2.assign(graph, {iterations: 1, settings:{
-                        adjustSizes: false,
-                        //barnesHutOptimize:true,
-                        //barnesHutTheta:0.001,
-                        //edgeWeightInfluence:10,
-                      //  gravity:1,
-                      //  linLogMode: true,
-                        //outboundAttractionDistribution : true,
-                        //strongGravityMode : true,
-                       // slowDown:3,
-                      //  scalingRatio:1
-                    }});
+
 
             },
             mouseup(e) {
