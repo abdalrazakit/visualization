@@ -7,7 +7,7 @@ import Generate from "./pages/Generate";
 import Graph from "./pages/Graph";
 import NoPage from "./pages/NoPage";
 import "./styles.css";
-import Chart from "./pages/Chart";
+import ChartPage from "./pages/ChartPage";
 
 export default function App() {
     return (
@@ -17,7 +17,7 @@ export default function App() {
                     <Route index element={<Home />} />
                     <Route path="Graph" element={<Graph />} />
                     <Route path="Generate" element={<Generate />} />
-                    <Route path="chart" element={<Chart />} />
+                    <Route path="chart"  element={<ChartPage />} />
 
                 </Route>
             </Routes>

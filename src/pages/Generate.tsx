@@ -1,9 +1,10 @@
 import React from 'react';
 import {InitForm} from "../helpers/InitForm";
-import {clearDataBase,startGenerate,  Item, startGenerateLogicaly} from "../helpers/generateData"
+import {clearDataBase,startGenerate,  Item} from "../helpers/generateData"
+import { CSVLink } from "react-csv";
 
 
-
+var nodesList;
 function Generate() {
     const {
         generatingState,
@@ -18,6 +19,7 @@ function Generate() {
     const doClean= async event => {
        await clearDataBase();
     }
+
     const doGenerate = async event => {
         setGeneratingState(1);
         if (formData.type == 'Random')
@@ -30,7 +32,9 @@ function Generate() {
             let assetManager = new Item('AssetManager', 1 ,5);
             let searchEngine = new Item("SearchEngine",1 ,5);
             let numOfDays= Math.round(Math.random()*10);
-            await startGenerate(numOfDays,component,keeper,marketPlace,exeManager,nodeExecutor,assetManager,searchEngine)
+            var lists= startGenerate(numOfDays,component,keeper,marketPlace,exeManager,nodeExecutor,assetManager,searchEngine)
+            console.log(lists)
+            nodesList=lists[0];
         }
         else if(formData.type=='Ranges') {
             //alert(Object.entries(formData))
@@ -246,7 +250,18 @@ function Generate() {
 
                 </fieldset>}
                 <button type="button" onClick={doGenerate} disabled={generatingState == 1}>Generate</button>
+
                 <button type="button" onClick={doClean} disabled={false}>Clean DataBase</button>
+
+            </div>
+            <div className="App">
+
+                {nodesList &&  <CSVLink
+                    data={nodesList   }
+
+                >
+                    Download me
+                </CSVLink>}
             </div>
         </div>
     );

@@ -39,6 +39,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
 
         useEffect(() => {
             const neo4j = require('neo4j-driver')
+
             const uri = 'neo4j+s://58b8eed3.databases.neo4j.io';
             const user = 'neo4j';
             const password = 'rr_XdvvmaTyWRb8k_HMBaP7u0F-WGhBLtXsYQx9GmkM';
