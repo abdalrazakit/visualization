@@ -98,7 +98,6 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                     dataset.edges[e] = [];
                 }
             });
-            console.log(timeLabels)
             setFiltersState({
                 clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
             });

@@ -15,7 +15,7 @@ const TimeLabelController: FC<{ setTimesLabels: (timeDataSet: any[]) => void, }>
             var session = driver.session();
 
             const getData = async () => {
-                await driver.session().run("MATCH (n) return  DISTINCT n.from AS date union MATCH (n) where not n.end=0 return DISTINCT n.end AS date"
+                await driver.session().run("MATCH (n) return  DISTINCT n.from AS date union MATCH (n) where not n.end=\"0\" return DISTINCT n.end AS date"
                     , {})
                     .then((result) => {
 
