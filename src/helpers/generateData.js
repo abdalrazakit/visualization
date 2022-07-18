@@ -1,4 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
+
 export class Item {
     name;
     min;
@@ -17,7 +18,6 @@ export class Item {
         this.name = name;
 
     }
-
 
 
     getCreatQuery() {
@@ -63,6 +63,7 @@ export class DataBase {
         const uri = 'neo4j+s://001bf928.databases.neo4j.io';
         const user = 'neo4j';
         const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
+
         this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
 
     }
@@ -80,6 +81,7 @@ export class DataBase {
         return arr.records.length;
 
     }
+
     async writeQuery(query, par) {
         this.session = this.driver.session();
         if (par === undefined) {
@@ -159,10 +161,10 @@ export class ComponentManagment {
 
     }
 
-     addCompleteComponent(date,component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
+    addCompleteComponent(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
 
-        var nodeList=[];
-        var relationList=[];
+        var nodeList = [];
+        var relationList = [];
         for (let i = 0; i < component.count; i++) {
             let compName = component.getNewName();
             for (let k = 0; k < keeper.count; k++)// keepers  for each component
@@ -170,7 +172,7 @@ export class ComponentManagment {
                 let keeperName = keeper.getNewName();
                 nodeList.push(
                     {
-                        label: 'Keeper',
+                        Label: 'Keeper',
                         name: keeperName,
                         from: date.valueOf(),
                         end: 0,
@@ -183,7 +185,7 @@ export class ComponentManagment {
                     let marketName = marketPlace.getNewName();
                     nodeList.push(
                         {
-                            label: 'MarketPlace',
+                            Label: 'MarketPlace',
                             name: marketName,
                             from: date.valueOf(),
                             end: 0,
@@ -192,11 +194,11 @@ export class ComponentManagment {
                     )
                     relationList.push(
                         {
-                            source:keeperName,
-                            source_Label:keeper.name,
-                            relation:"has",
-                            target_Label:marketPlace.name,
-                            target:marketName,
+                            source: keeperName,
+                            source_Label: keeper.name,
+                            relation: "has",
+                            target_Label: marketPlace.name,
+                            target: marketName,
                             from: date.valueOf(), end: 0
 
                         }
@@ -206,7 +208,7 @@ export class ComponentManagment {
                         let exeManagerName = exeManager.getNewName();
                         nodeList.push(
                             {
-                                label: 'ExecutionManager',
+                                Label: 'ExecutionManager',
                                 name: exeManagerName,
                                 from: date.valueOf(),
                                 end: 0,
@@ -215,11 +217,11 @@ export class ComponentManagment {
                         )
                         relationList.push(
                             {
-                                source:marketName,
-                                source_Label:marketPlace.name,
+                                source: marketName,
+                                source_Label: marketPlace.name,
                                 relation: "managedBy",
-                                target_Label:exeManager.name,
-                                target:exeManagerName,
+                                target_Label: exeManager.name,
+                                target: exeManagerName,
                                 from: date.valueOf(), end: 0
                             }
                         )
@@ -231,7 +233,7 @@ export class ComponentManagment {
 
                             nodeList.push(
                                 {
-                                    label: nodeExecutor.name,
+                                    Label: nodeExecutor.name,
                                     name: nodeExecutorName,
                                     from: date.valueOf(),
                                     end: 0,
@@ -240,11 +242,11 @@ export class ComponentManagment {
                             )
                             relationList.push(
                                 {
-                                    source:exeManagerName,
-                                    source_Label:exeManager.name,
+                                    source: exeManagerName,
+                                    source_Label: exeManager.name,
                                     relation: "manages",
-                                    target_Label:nodeExecutor.name,
-                                    target:nodeExecutorName,
+                                    target_Label: nodeExecutor.name,
+                                    target: nodeExecutorName,
                                     from: date.valueOf(), end: 0
                                 }
                             )
@@ -253,7 +255,7 @@ export class ComponentManagment {
                                 let assetManagerName = assetManager.getNewName();
                                 nodeList.push(
                                     {
-                                        label: assetManager.name,
+                                        Label: assetManager.name,
                                         name: assetManagerName,
                                         from: date.valueOf(),
                                         end: 0,
@@ -262,11 +264,11 @@ export class ComponentManagment {
                                 )
                                 relationList.push(
                                     {
-                                        source:nodeExecutorName,
-                                        source_Label:nodeExecutor.name,
+                                        source: nodeExecutorName,
+                                        source_Label: nodeExecutor.name,
                                         relation: "has",
-                                        target_Label:assetManager.name,
-                                        target:assetManagerName,
+                                        target_Label: assetManager.name,
+                                        target: assetManagerName,
                                         from: date.valueOf(), end: 0
                                     }
                                 )
@@ -280,7 +282,7 @@ export class ComponentManagment {
                     let sEngName = searchEngine.getNewName();
                     nodeList.push(
                         {
-                            label: searchEngine.name,
+                            Label: searchEngine.name,
                             name: sEngName,
                             from: date.valueOf(),
                             end: 0,
@@ -289,37 +291,36 @@ export class ComponentManagment {
                     )
                     relationList.push(
                         {
-                            source:keeperName,
-                            source_Label:keeper.name,
+                            source: keeperName,
+                            source_Label: keeper.name,
                             relation: "has",
-                            target_Label:searchEngine.name,
-                            target:sEngName,
+                            target_Label: searchEngine.name,
+                            target: sEngName,
                             from: date.valueOf(), end: 0
                         }
                     )
                 }
             }
         }
-        return [nodeList,relationList]
+        return [nodeList, relationList]
     }
 
     async addRandomNodesForAllComponents(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd) {
 
         let components = await this.getAllComponent_withoutDeleted();// NOT DELETED
         let len = components.records.length;
-        var addedNodes=null;
-        var addedRelations=null;
+        var addedNodes = null;
+        var addedRelations = null;
         let count = (numOfAdd === undefined) ? Math.round(Math.random() * (len - 1)) : numOfAdd;
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
             let compName = components.records[rand]._fields[0]['properties'].name
-            var lists=this.addCompleteComponent(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+            var lists = this.addCompleteComponent(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
             addedNodes.concat(lists[0]);
             addedRelations.concat(lists[1]);
         }
-        return[addedNodes,addedRelations]
+        return [addedNodes, addedRelations]
     }
-
 
 
     async deleteRandomNodes_NoComponent(date, numOfdelete) {
@@ -343,7 +344,7 @@ export async function clearDataBase() {
     database.clear();
 }
 
-export  function startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
+export function startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
 
     var date = new Date(Date.now());
     date.setHours(0, 0, 0, 0);
@@ -354,29 +355,29 @@ export  function startGenerate(numOfDays, component, keeper, marketPlace, exeMan
     let database = new DataBase();
 
     var componentManagment = new ComponentManagment(database, component);
-   var lists= componentManagment.addCompleteComponent(date,component,
+    var lists = componentManagment.addCompleteComponent(date, component,
         keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
 
-    var addNodeList=lists[0];
-    var addRelationList=lists[1];
+    var addNodeList = lists[0];
+    var addRelationList = lists[1];
 
-    for (let i = numOfDays;  i >= 0;i--) {
-        date.setDate(date.getDate() +1 )
+    for (let i = numOfDays; i >= 0; i--) {
+        date.setDate(date.getDate() + 1)
         let component2 = (numOfAdd === undefined) ? new Item('Component', component.min / 2, component.max / 2) :
             new Item('Component', numOfAdd);
 
         componentManagment.component = component2;
-        lists= componentManagment.addCompleteComponent(date,component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
+        lists = componentManagment.addCompleteComponent(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
         addNodeList.concat(lists[0]);
         addRelationList.concat(lists[1]);
+        console.log(addNodeList.length)
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
         //await componentManagment.addRandomNodesForAllComponents(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
 
     }
-
-    return [addNodeList,addRelationList]
+    return [addNodeList, addRelationList]
 
 };
 
@@ -387,12 +388,11 @@ export async function startDelete(numOfDays, component, keeper, marketPlace, exe
     date.setDate(1)
 
     numOfDays -= 1;
-    let database=new DataBase();
+    let database = new DataBase();
     var componentManagment = new ComponentManagment(database, component);
 
-    for (let i = numOfDays;  i >= 0;i--) {
-        date.setDate(date.getDate() +1 )
-
+    for (let i = numOfDays; i >= 0; i--) {
+        date.setDate(date.getDate() + 1)
 
         let del = (numOfDelete === undefined) ? Math.round(component.count / 2) : numOfDelete
         await componentManagment.deleteRandomComponent(del, date);
@@ -407,3 +407,16 @@ export async function startDelete(numOfDays, component, keeper, marketPlace, exe
 
 };
 
+export async function generateFromFile() {
+    var path = 'https://docs.google.com/spreadsheets/d/15UwVT5jCG1nXd2FFyoK2ZJYT2B73gI_xVsSYEyDFJ2k/export?format=csv';
+
+    var query = "load csv with headers from " +
+        "'" + path + "' as row\n" +
+        'call apoc.create.node([row.Label],' +
+        '{ name:row.name, from:row.from,end:row.end, component:row.component}) \n' +
+        'yield node return count(node)';
+    let dataBase = new DataBase();
+    console.log(query)
+    await dataBase.writeQuery(query);
+    console.log('done writing')
+ }

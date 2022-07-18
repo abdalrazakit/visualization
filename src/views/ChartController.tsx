@@ -36,6 +36,7 @@ const ChartController: FC<{ setChartData1: (any) => void, setChartData2: (any) =
         const uri = 'neo4j+s://001bf928.databases.neo4j.io';
         const user = 'neo4j';
         const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
+
         const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
         const session = driver.session();
 

@@ -1,11 +1,14 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {InitForm} from "../helpers/InitForm";
-import {clearDataBase,startGenerate,  Item} from "../helpers/generateData"
-import { CSVLink } from "react-csv";
+import {clearDataBase, startGenerate, Item, generateFromFile} from "../helpers/generateData"
+import {CSVLink} from "react-csv";
 
 
 var nodesList;
+
 function Generate() {
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isFilePicked, setIsFilePicked] = useState(false);
     const {
         generatingState,
         setGeneratingState,
@@ -16,27 +19,40 @@ function Generate() {
         renderErrorMessage
     } = InitForm();
 
-    const doClean= async event => {
-       await clearDataBase();
+
+    const changeHandler = (event) => {
+        setSelectedFile(event.target.files[0]);
+        event.target.files[0] && setIsFilePicked(true);
+    };
+    const handleSubmission = () => {
+        // HANDLING FILE AS SENDING FILE INTO BACKEND
+        if (!isFilePicked) return;
+        const formData = new FormData();
+        if(selectedFile)
+            console.log(selectedFile);
+        generateFromFile()
+    };
+
+
+    const doClean = async event => {
+        await clearDataBase();
     }
 
     const doGenerate = async event => {
         setGeneratingState(1);
-        if (formData.type == 'Random')
-        {
-            let component = new Item("Component", 1 ,5);
+        if (formData.type == 'Random') {
+            let component = new Item("Component", 1, 5);
             let keeper = new Item("Keeper", 1, 5);
-            let marketPlace = new Item("Marketplace", 1 ,5);
-            let exeManager = new Item("ExecutionManager", 1 ,5);
-            let nodeExecutor = new Item('NodeExecutor', 1 ,5);
-            let assetManager = new Item('AssetManager', 1 ,5);
-            let searchEngine = new Item("SearchEngine",1 ,5);
-            let numOfDays= Math.round(Math.random()*10);
-            var lists= startGenerate(numOfDays,component,keeper,marketPlace,exeManager,nodeExecutor,assetManager,searchEngine)
+            let marketPlace = new Item("Marketplace", 1, 5);
+            let exeManager = new Item("ExecutionManager", 1, 5);
+            let nodeExecutor = new Item('NodeExecutor', 1, 5);
+            let assetManager = new Item('AssetManager', 1, 5);
+            let searchEngine = new Item("SearchEngine", 1, 5);
+            let numOfDays = Math.round(Math.random() * 10);
+            var lists = startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
             console.log(lists)
-            nodesList=lists[0];
-        }
-        else if(formData.type=='Ranges') {
+            nodesList = lists[0];
+        } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
             let component = new Item("Component", formData.Component_min, formData.Component_max);
             let keeper = new Item("Keeper", formData.Keeper_min, formData.Keeper_max);
@@ -45,28 +61,30 @@ function Generate() {
             let nodeExecutor = new Item('NodeExecutor', formData.NodeExecutor_min, formData.NodeExecutor_max);
             let assetManager = new Item('AssetManager', formData.AssetManager_min, formData.AssetManager_max);
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
-            let numOfDays= formData.DaysNumber
-            await startGenerate(numOfDays,component,keeper,marketPlace,exeManager,nodeExecutor,assetManager,searchEngine)
-        }else
-             if (formData.type=='Logicly')
-             {
-                 let component = new Item("Component", formData.NumOfComponent);
-                 let numOfKeeper4Component=Math.round( formData.NumOfKeeper/formData.NumOfComponent);
-                 let keeper = new Item("Keeper", numOfKeeper4Component);
-                 let numOfMarketplace4Keeper=Math.round( formData.NumOfMarketplace/formData.NumOfKeeper);
-                 let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
+            let numOfDays = formData.DaysNumber
+            var lists = startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+            console.log(lists)
+            nodesList = lists[0];
+        } else if (formData.type == 'Logicly') {
+            let component = new Item("Component", formData.NumOfComponent);
+            let numOfKeeper4Component = Math.round(formData.NumOfKeeper / formData.NumOfComponent);
+            let keeper = new Item("Keeper", numOfKeeper4Component);
+            let numOfMarketplace4Keeper = Math.round(formData.NumOfMarketplace / formData.NumOfKeeper);
+            let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
 
-                 let exeManager = new Item("ExecutionManager", Math.round(formData.NumOfExecutionManager/formData.NumOfMarketplace));
-                 let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor/formData.NumOfExecutionManager));
-                 let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager/formData.NumOfNodeExecutor));
-                 let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine/formData.NumOfKeeper));
-                 let numOfDays= formData.DaysNumber
-                 await startGenerate(numOfDays,component,keeper,marketPlace,exeManager,nodeExecutor,assetManager,searchEngine,formData.NumOfAdd,formData.NumOfDelete,formData.NumOfEdit)
-             }
+            let exeManager = new Item("ExecutionManager", Math.round(formData.NumOfExecutionManager / formData.NumOfMarketplace));
+            let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor / formData.NumOfExecutionManager));
+            let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfNodeExecutor));
+            let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
+            let numOfDays = formData.DaysNumber
+            await startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdit)
+        } else if (formData.type == 'fromFile') {
+
+        }
         setTimeout(() => {
             setGeneratingState(2);
             setFormData({reset: true})
-            setErrorMessages({ name: "name", message: "test error message" });
+            setErrorMessages({name: "name", message: "test error message"});
         }, 1000)
     }
 
@@ -76,7 +94,7 @@ function Generate() {
             {generatingState == 1 && <div>Generating ...</div>}
             {generatingState == 2 && <div>Generating Done</div>}
 
-            <div >
+            <div>
                 <fieldset>
                     <div>
                         <label>Select Type: </label>
@@ -85,6 +103,7 @@ function Generate() {
                             <option value="Random">Random</option>
                             <option value="Ranges">Ranges</option>
                             <option value="Logicly">Logicly</option>
+                            <option value="fromFile">From File</option>
                         </select>
                     </div>
                 </fieldset>
@@ -187,7 +206,7 @@ function Generate() {
                                value={formData.DaysNumber || ''}/>
                     </div>
                 </fieldset>}
-                {formData.type == 'Logicly'&&  <fieldset disabled={false}>
+                {formData.type == 'Logicly' && <fieldset disabled={false}>
                     <div className="input-container">
                         <label>Components: </label>
                         <input type="number" name="NumOfComponent" onChange={handleChange} step="1"
@@ -249,18 +268,42 @@ function Generate() {
                     </div>
 
                 </fieldset>}
+                {formData.type == 'fromFile' && <fieldset disabled={false}>
+                    <input type="file" name="file" onChange={changeHandler}/>
+                    <div>
+                        <button onClick={handleSubmission}>Submit</button>
+                    </div>
+                    {/*{isFilePicked ? (*/}
+                    {/*    <div>*/}
+                    {/*        <p>Filename: {selectedFile.name}</p>*/}
+                    {/*        <p>Filetype: {selectedFile.type}</p>*/}
+                    {/*        <p>Size in bytes: {selectedFile.size}</p>*/}
+                    {/*        <p>*/}
+                    {/*            lastModifiedDate:{" "}*/}
+                    {/*            {selectedFile.lastModifiedDate.toLocaleDateString()}*/}
+                    {/*        </p>*/}
+                    {/*    </div>*/}
+                    {/*) : (*/}
+                    {/*    <div>*/}
+                    {/*        <p>Select a file</p>*/}
+                    {/*    </div>*/}
+                    {/*)}*/}
+                </fieldset>
+
+                }
                 <button type="button" onClick={doGenerate} disabled={generatingState == 1}>Generate</button>
 
                 <button type="button" onClick={doClean} disabled={false}>Clean DataBase</button>
 
+
             </div>
             <div className="App">
 
-                {nodesList &&  <CSVLink
-                    data={nodesList   }
+                {nodesList && <CSVLink
+                    data={nodesList}
 
                 >
-                    Download me
+                    Download first day file
                 </CSVLink>}
             </div>
         </div>
