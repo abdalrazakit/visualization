@@ -60,11 +60,12 @@ export class DataBase {
 
     constructor() {
         const neo4j = require('neo4j-driver')
-        const uri = 'neo4j+s://001bf928.databases.neo4j.io';
-        const user = 'neo4j';
-        const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
 
-        this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+        const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+        const user = 'neo4j';
+        const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+
+        this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
     }
 

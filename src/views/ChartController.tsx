@@ -78,13 +78,12 @@ const ChartController: FC<{  timeLabels: any[], setChartData: (any) => void }> =
                 //     })
                 for (let i = 0; i < timeLabels.length; i++) {
                     var time = timeLabels[i];
-                    if(time == undefined) continue
                     const dataForTime = await database.readQuery(
                         "match (node{end:" + time + "}) return {label:'delete', count: count(node)} as info UNION ALL " +
                         "match (node{from:" + time + "}) return {label:'add', count: count(node)} as info")
                         .then((result) => {
-                             datapointsDELETE.push(result.records[0]._fields[0]['count'].low * -1);
-                            datapointsADD.push(result.records[1]._fields[0]['count'].low);
+                             datapointsDELETE.push(result.records[0]._fields[0]['count'] * -1);
+                            datapointsADD.push(result.records[1]._fields[0]['count']);
                         })
                 }
                 datasets.push({

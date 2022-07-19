@@ -15,11 +15,12 @@ const LineChartController: FC<{  timeLabels: any[], setChartData: (any) => void 
 
         const neo4j = require('neo4j-driver')
 
-        const uri = 'neo4j+s://001bf928.databases.neo4j.io';
-        const user = 'neo4j';
-        const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
 
-        const driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+        const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+        const user = 'neo4j';
+        const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+
+        const driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
         const session = driver.session();
 
 
@@ -46,12 +47,11 @@ const LineChartController: FC<{  timeLabels: any[], setChartData: (any) => void 
                         var time = timeLabels[i];
                         console.log('time='
                             + time)
-                        if (time == undefined) continue;
                         var query = "match (n:" + items[item] + ") where( (n.from<=" + time + ") and (n.end>" + time + " or n.end=0)) return count(n)";
                         console.log(query)
                         const dataForTime = await driver.session().run(query)
                             .then((result) => {
-                                datapoints.push(result.records[0]._fields[0].toNumber());
+                                datapoints.push(result.records[0]._fields[0]);
                                 console.log("datapoints:" + datapoints.values)
                             })
                     }

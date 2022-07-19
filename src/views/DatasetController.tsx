@@ -41,11 +41,11 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
         useEffect(() => {
             const neo4j = require('neo4j-driver')
 
-            const uri = 'neo4j+s://001bf928.databases.neo4j.io';
-            const user = 'neo4j';
-            const password = '0KTmA258EX7WFm7HduJai55xfkfE1XDUHFbQbVzLV2k';
 
-            var driver = neo4j.driver(uri, neo4j.auth.basic(user, password))
+            const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+            const user = 'neo4j';
+            const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+            var driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
             var dataset: Dataset = {
                 clusters: [
@@ -98,6 +98,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                     dataset.edges[e] = [];
                 }
             });
+
             setFiltersState({
                 clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
             });
@@ -124,7 +125,6 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                         ))
                         .subscribe({
                             next: records => {
-                                console.log("next")
                                  records.forEach(record => {
                                     // for each column
                                     record.forEach((value, key) => {
@@ -137,7 +137,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                 label: value.properties.name,
                                                 x: Math.random() * 1000,// * x + comId * x,
                                                 y: Math.random() * 1000 ,// * y + comId * y,
-                                                key: value.identity.low,
+                                                key: value.identity,
                                                 fromTime: value.properties.from,
                                                 endTime: value.properties.end
                                             };
@@ -156,10 +156,13 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                             console.log("exx")
                                                         }
                                                     }
+
                                                     dataset.nodes[node.fromTime][node.key] = node;
                                                 }
-                                                if (node.endTime != 0)
+                                                if (node.endTime != 0){
                                                     dataset.nodes[node.endTime][node.key] = node;
+                                                }
+
                                             }
 
                                         }
@@ -169,14 +172,15 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                 start: value.start,
                                                 end: value.end,
                                                 label: value.type,
-                                                key: value.identity.low,
-                                                fromTime: value.properties.from,
+                                                key: value.identity,
+                                                fromTime:  value.properties.from,
                                                 endTime: value.properties.end
                                             };
                                              if (edge.endTime != edge.fromTime) {
-                                                dataset.edges[edge.fromTime][edge.key]= edge;
-                                                if (edge.endTime != 0)
-                                                    dataset.edges[edge.endTime][edge.key]= edge;
+                                                 dataset.edges[edge.fromTime][edge.key]= edge;
+                                                if (edge.endTime != 0){
+                                                 dataset.edges[edge.endTime][edge.key]= edge;
+                                                }
                                             }
                                         }
                                     });
