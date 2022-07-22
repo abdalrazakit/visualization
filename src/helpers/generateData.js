@@ -60,10 +60,9 @@ export class DataBase {
 
     constructor() {
         const neo4j = require('neo4j-driver')
-
-        const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+        const uri = 'neo4j+s://58b8eed3.databases.neo4j.io';
         const user = 'neo4j';
-        const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+        const password = 'rr_XdvvmaTyWRb8k_HMBaP7u0F-WGhBLtXsYQx9GmkM';
 
         this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
@@ -157,6 +156,8 @@ export class ComponentManagment {
         count = (count > len) ? len : count;
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
+            console.log(components.records[rand]._fields[0])
+            console.log(components.records[rand]._fields[0]['properties'].name)
             await this.addRandomNodesForAllComponentsToDataBase(components.records[rand]._fields[0]['properties'].name, date);
         }
 
@@ -166,7 +167,9 @@ export class ComponentManagment {
 
         let components = await this.getAllComponent_withoutDeleted();// NOT DELETED
         let len = components.records.length;
+
         let count = (numOfAdd === undefined) ? Math.round(Math.random() * (len - 1)) : numOfAdd;
+
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
             let compName = components.records[rand]._fields[0]['properties'].name
@@ -178,7 +181,7 @@ export class ComponentManagment {
 
     async addNodesToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
 
-
+        console.log('keeper count='+ keeper.count)
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
         {
             let keeperName = keeper.getNewName();
@@ -616,20 +619,24 @@ export async function startGenerateToDataBase(numOfDays, component, keeper, mark
     var componentManagment = new ComponentManagment(database, component);
     await componentManagment.addCompleteComponentToDataBase(date,
         keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-
+    console.log('added first day')
     for (let i = numOfDays;  i >= 0;i--) {
         date.setDate(date.getDate() +1 )
         let component2 = (numOfAdd === undefined) ? new Item('Component', component.min / 2, component.max / 2) :
             new Item('Component', numOfAdd);
         componentManagment.component = component2;
         await componentManagment.addCompleteComponentToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
+        console.log('added'+i+' day')
         let del = (numOfDelete === undefined) ? Math.round(component2.count / 2) : numOfDelete
         await componentManagment.deleteRandomComponent(del, date);
+        console.log('deleted'+i+' day')
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
         await componentManagment.addRandomNodesForAllComponentsToDataBase(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+        console.log('added'+i+' day')
         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
+        console.log('deleted'+i+' day')
     }
     await database.close()
 
