@@ -158,7 +158,7 @@ export class ComponentManagment {
             let rand = Math.round(Math.random() * (len - 1));
             console.log(components.records[rand]._fields[0])
             console.log(components.records[rand]._fields[0]['properties'].name)
-            await this.addRandomNodesForAllComponentsToDataBase(components.records[rand]._fields[0]['properties'].name, date);
+            await this.deleteCompleteComponent(components.records[rand]._fields[0]['properties'].name, date);
         }
 
     }
@@ -181,8 +181,7 @@ export class ComponentManagment {
 
     async addNodesToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
 
-        console.log('keeper count='+ keeper.count)
-        for (let k = 0; k < keeper.count; k++)// keepers  for each component
+         for (let k = 0; k < keeper.count; k++)// keepers  for each component
         {
             let keeperName = keeper.getNewName();
             await this.database.writeQuery(keeper.getCreatQuery(), {
@@ -488,7 +487,7 @@ export class ComponentManagment {
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
             let compName = components.records[rand]._fields[0]['properties'].name
-            var lists = this.addCompleteComponent(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+            var lists = this.addRandomNodesForAllComponentsToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
             addedNodes.concat(lists[0]);
             addedRelations.concat(lists[1]);
         }
@@ -572,7 +571,7 @@ export async function startDeleteOnline(numOfDays, component, keeper, marketPlac
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
-        await componentManagment.addRandomNodesForAllComponents(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+        await componentManagment.addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
     }
     await database.close()
