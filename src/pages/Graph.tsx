@@ -9,7 +9,6 @@ import {
 } from "react-sigma-v2";
 import {omit, mapValues, keyBy, constant, templateSettings, toNumber} from "lodash";
 
-import Timeline, {calendar} from 'react-interactive-timeline';
 
 import getNodeProgramImage from "sigma/rendering/webgl/programs/node.image";
 
@@ -41,7 +40,6 @@ import CommandsPanel from "../views/CommandsPanel";
 import FillterController from "../views/FillterController";
 
 
-
 // Create the sigma
 const MyGraph: FC = () => {
 
@@ -56,22 +54,15 @@ const MyGraph: FC = () => {
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
     const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
 
-    var min = 0;
-    var max = 0;
-
     useEffect(() => {
         if (timeLabels) {
-            min = timeLabels ? new Date(timeLabels[0]).getTime() : 0;
-            max = timeLabels ? new Date(timeLabels[timeLabels.length - 1]).getTime() : 0;
             setSelectedDate(new Date(timeLabels[0]).getTime())
         }
     }, [timeLabels])
-
-
     return (
         <div id="app-root" className={"show-contents"}>
             <SigmaContainer
-                graphOptions={{type: "directed", multi: true}}
+                graphOptions={{type: "directed", multi: true,allowSelfLoops:true}}
                 initialSettings={{
                     nodeProgramClasses: {image: getNodeProgramImage()},
                     labelRenderer: drawLabel,
@@ -96,16 +87,20 @@ const MyGraph: FC = () => {
                     filters={filtersState}
                     setFiltersState={setFiltersState}/>)}
 
-                {dataset && (
+                {timeLabels && dataset && (
                     <>
                         <FillterController filters={filtersState}/>
-                        {dataReady && (<TimeLineController dataset={dataset!}
-                                                           selectedDate={selectedDate}
+                        {(<TimeLineController dataset={dataset!}
+                                              timeLabels={timeLabels}
+
+                                              selectedDate={selectedDate}
                                                            filters={filtersState}
                                                            setFiltersState={setFiltersState}/>
                         )}
                         {/*<GraphSettingsController hoveredNode={hoveredNode}/>*/}
-                        <GraphEventsController   selectedDate={selectedDate} setHoveredNode={setHoveredNode} setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge}dataset={dataset!}/>
+                        <GraphEventsController selectedDate={selectedDate} setHoveredNode={setHoveredNode}
+                                               setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge}
+                                               dataset={dataset!}/>
 
                         <ControlsContainer position={"bottom-left"}>
                             <ZoomControl/>
@@ -128,26 +123,6 @@ const MyGraph: FC = () => {
                                     }}/>
                         </ControlsContainer>
                         <div className="contents">
-                            <div className={"row"}>
-                                <div className={"timeline"}>
-                                    <RangeSlider
-                                        disabled={true}
-                                        min={min}
-                                        max={max}
-                                        size={'lg'}
-                                        step={86400000}
-                                        tooltip={"on"}
-                                        tooltipPlacement={"bottom"}
-                                        tooltipLabel={(numner) => {
-                                            let custom = {year: "numeric", month: "short", day: "numeric"};
-                                            return new Date(numner).toLocaleDateString("en-us");
-                                        }
-                                        }
-                                        value={selectedDate}
-                                        onChange={changeEvent => setSelectedDate(toNumber(changeEvent.target.value))}
-                                    />
-                                </div>
-                            </div>
                             <div className="panels">
                                 <GraphTitle filters={filtersState}/>
                                 <SearchField filters={filtersState}/>
@@ -171,7 +146,6 @@ const MyGraph: FC = () => {
                                         }
                                     }}
                                     stopTimeLine={() => {
-
                                     }}
                                     toggleCluster={(cluster) => {
                                         setFiltersState((filters) => ({
@@ -182,10 +156,28 @@ const MyGraph: FC = () => {
                                         }));
                                     }}
                                 />
-                                <CommandsPanel dataset={dataset!} selectedDate={selectedDate} selectedEdge={selectedEdge} selectedNode={selectedNode} />
+                                <CommandsPanel dataset={dataset!} selectedDate={selectedDate}
+                                               selectedEdge={selectedEdge} selectedNode={selectedNode}/>
 
                             </div>
-
+                            (timeLabels &&
+                            <div className={"timeline"}>
+                                <RangeSlider
+                                    min={timeLabels ? new Date(timeLabels[0]).getTime() : 0}
+                                    max={timeLabels ? new Date(timeLabels[timeLabels.length - 1]).getTime() : 0}
+                                    size={'lg'}
+                                    step={86400000}
+                                    tooltip={"on"}
+                                    tooltipPlacement={"top"}
+                                    tooltipLabel={(numner) => {
+                                        let custom = {year: "numeric", month: "short", day: "numeric"};
+                                        return new Date(numner).toLocaleDateString("en-us");
+                                    }
+                                    }
+                                    value={selectedDate}
+                                    onChange={changeEvent => setSelectedDate(toNumber(changeEvent.target.value))}
+                                />
+                            </div>)
 
 
                         </div>

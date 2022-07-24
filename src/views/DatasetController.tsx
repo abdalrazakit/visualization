@@ -129,11 +129,13 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         if (value && value.hasOwnProperty('labels')) {
                                             var comId = toNumber(value.properties.component.substr(9, 1))
                                             var {x, y} = calculateX_Y(comId);
+                                            if (value.identity == 2144)
+                                                console.log(value)
                                             var node = {
                                                 cluster: value.labels[0],
-                                                label: value.properties.name,
-                                                x: Math.random() * 1000,// * x + comId * x,
-                                                y: Math.random() * 1000 ,// * y + comId * y,
+                                                label: value.identity.toString(),
+                                                x: Math.random()  ,//* x + comId * x,
+                                                y: Math.random()  ,//* y + comId * y,
                                                 key: value.identity,
                                                 fromTime: value.properties.from,
                                                 endTime: value.properties.end
@@ -149,6 +151,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                                     "hidden": !filters[node.cluster],
                                                                     image: `${process.env.PUBLIC_URL}/images/${MyClusters[node.cluster].image}`,
                                                                 });
+                                                            if (node.key == 2144)
+                                                            console.log(node)
                                                         } catch (e) {
                                                             console.log("exx")
                                                         }

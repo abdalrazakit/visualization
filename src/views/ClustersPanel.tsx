@@ -63,9 +63,9 @@ const ClustersPanel: FC<{
                             <AiOutlineCloseCircle/> Uncheck all
                         </button>
                         {" "}
-                        <button className="btn" onClick={() => startTimeLine()}>
-                           Next day
-                        </button>
+                        {/*<button className="btn" onClick={() => startTimeLine()}>*/}
+                        {/*   Next day*/}
+                        {/*</button>*/}
                     </p>
                     <ul>
                         {sortedClusters.map((cluster) => {
