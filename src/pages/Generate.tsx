@@ -36,6 +36,11 @@ function Generate() {
     const doClean = async event => {
         await clearDataBase();
         console.log('done clearing')
+        setTimeout(() => {
+            setGeneratingState(3);
+            setFormData({reset: true})
+            setErrorMessages({name: "name", message: "test error message"});
+        }, 1000)
     }
 
     const doGenerate = async event => {
@@ -155,6 +160,7 @@ function Generate() {
             <h1>This is the Generate</h1>
             {generatingState == 1 && <div>Generating ...</div>}
             {generatingState == 2 && <div>Generating Done</div>}
+            {generatingState == 3 && <div>Cleaning Done</div>}
 
             <div>
                 <fieldset>
@@ -343,8 +349,8 @@ function Generate() {
 
                 }
                 <button type="button" onClick={doGenerate} disabled={generatingState == 1}>Generate to database</button>
-                <button type="button" onClick={doGenerateToFile} disabled={generatingState == 1}>Generate to csv</button>
-                <button type="button" onClick={doClean} disabled={false}>Clean DataBase</button>
+                <button type="button" onClick={doGenerateToFile} disabled={generatingState ==1}>Generate to csv</button>
+                <button type="button" onClick={doClean}disabled={generatingState == 1|| generatingState == 3}>Clean DataBase</button>
 
 
             </div>

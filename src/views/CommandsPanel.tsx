@@ -9,6 +9,7 @@ import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import {Cluster, Dataset, FiltersState} from "../types";
 import Panel from "./Panel";
 import {InitForm} from "../helpers/InitForm";
+import {DataBase} from "../helpers/generateData";
 
 let sourceNode: string | null = null;
 
@@ -19,12 +20,13 @@ const CommandsPanel: FC<{
 }> = ({dataset, selectedNode, selectedDate, selectedEdge, children}) => {
     const sigma = useSigma();
     const graph = sigma.getGraph();
-
+    const database= new DataBase();
 
     function deleteNode() {
         if (!selectedNode) return
         var atr = graph.getNodeAttributes(selectedNode);
         console.log("delete node")
+
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
         graph.dropNode(selectedNode)
         dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;

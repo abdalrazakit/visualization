@@ -1,4 +1,5 @@
 import {v4 as uuidv4} from 'uuid';
+import {driver} from "neo4j-driver";
 
 export class Item {
     name;
@@ -67,7 +68,8 @@ export class DataBase {
         this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
     }
-
+    getDriver()
+    {return this.driver}
     async getLength_withDeleted(obj) {
         let arr = await this.readQuery(obj.getAllQuery_withDeleted());
         return arr.records.length;
@@ -625,17 +627,17 @@ export async function startGenerateToDataBase(numOfDays, component, keeper, mark
             new Item('Component', numOfAdd);
         componentManagment.component = component2;
         await componentManagment.addCompleteComponentToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
-        console.log('added'+i+' day')
+        console.log('added'+i-numOfDays+1+' day')
         let del = (numOfDelete === undefined) ? Math.round(component2.count / 2) : numOfDelete
         await componentManagment.deleteRandomComponent(del, date);
-        console.log('deleted'+i+' day')
+        console.log('deleted'+i-numOfDays+1+' day')
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
         await componentManagment.addRandomNodesForAllComponentsToDataBase(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-        console.log('added'+i+' day')
+        console.log('added'+i-numOfDays+1+' day')
         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
-        console.log('deleted'+i+' day')
+        console.log('deleted'+i-numOfDays+1+' day')
     }
     await database.close()
 
