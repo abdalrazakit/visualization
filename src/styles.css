@@ -27,7 +27,8 @@ body {
   font-family: "Public Sans", sans-serif;
   background: white;
   font-size: 0.9em;
- }
+
+}
 h1,
 h2 {
   font-family: Lora, serif;
@@ -96,14 +97,17 @@ body {
   max-height: calc(100vh - 2 * var(--stage-padding));
   overflow-y: auto;
   padding: var(--stage-padding);
-  scrollbar-width: thin;
+
   }
 .timeline {
- width: 95%;
+  position: absolute;
+
+  width: 65%;
   align-content: center;
   alignment: center;
-  margin-left: 3%;
-
+  margin-left: 4%;
+  margin-bottom: 8px;
+  bottom: 0;
 
 }
 ::-webkit-scrollbar {
@@ -307,6 +311,7 @@ ul > li {
   #app-root.show-contents .controls {
     display: none;
   }
+
 
   #app-root.show-contents .contents {
     position: absolute;

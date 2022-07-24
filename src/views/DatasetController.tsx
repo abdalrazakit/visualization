@@ -42,9 +42,9 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
             const neo4j = require('neo4j-driver')
 
 
-            const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+            const uri = 'neo4j+s://58b8eed3.databases.neo4j.io';
             const user = 'neo4j';
-            const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+            const password = 'rr_XdvvmaTyWRb8k_HMBaP7u0F-WGhBLtXsYQx9GmkM';
             var driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
             var dataset: Dataset = {
@@ -132,11 +132,13 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         if (value && value.hasOwnProperty('labels')) {
                                             var comId = toNumber(value.properties.component.substr(9, 1))
                                             var {x, y} = calculateX_Y(comId);
+                                            if (value.identity == 2144)
+                                                console.log(value)
                                             var node = {
                                                 cluster: value.labels[0],
-                                                label: value.properties.name,
-                                                x: Math.random() * 1000,// * x + comId * x,
-                                                y: Math.random() * 1000 ,// * y + comId * y,
+                                                label: value.identity.toString(),
+                                                x: Math.random()  ,//* x + comId * x,
+                                                y: Math.random()  ,//* y + comId * y,
                                                 key: value.identity,
                                                 fromTime: value.properties.from,
                                                 endTime: value.properties.end
@@ -152,6 +154,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                                     "hidden": !filters[node.cluster],
                                                                     image: `${process.env.PUBLIC_URL}/images/${MyClusters[node.cluster].image}`,
                                                                 });
+                                                            if (node.key == 2144)
+                                                            console.log(node)
                                                         } catch (e) {
                                                             console.log("exx")
                                                         }

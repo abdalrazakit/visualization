@@ -16,9 +16,9 @@ const LineChartController: FC<{  timeLabels: any[], setChartData: (any) => void 
         const neo4j = require('neo4j-driver')
 
 
-        const uri = 'neo4j+s://007b1fbe.databases.neo4j.io';
+        const uri = 'neo4j+s://58b8eed3.databases.neo4j.io';
         const user = 'neo4j';
-        const password = 'xmbWBeAWjqbut2-S2mkW7N3h42Uu5BkvfO9WM5pb4R8';
+        const password = 'rr_XdvvmaTyWRb8k_HMBaP7u0F-WGhBLtXsYQx9GmkM';
 
         const driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
         const session = driver.session();
