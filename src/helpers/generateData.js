@@ -1,5 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 import {driver} from "neo4j-driver";
+import {result} from "lodash";
 
 export class Item {
     name;
@@ -68,6 +69,20 @@ export class DataBase {
         this.driver = neo4j.driver(uri, neo4j.auth.basic(user, password),  { disableLosslessIntegers: true })
 
     }
+    getNodeIdByName(name)
+    {
+        return this.readQuery('match (n) where n.name="'+ name+'" return id(n)').then((result)=>{
+            return result.records[0]._fields[0]
+        })
+    }
+    async getNodeComponentById(id)
+    {
+        var query='match (n) where id(n)='+id+' return n.component'
+        return await this.readQuery(query).then
+        ((result)=>{
+            console.log('1'+result.records[0]._fields[0])
+            return result.records[0]._fields[0]});
+    }
     getDriver()
     {return this.driver}
     async getLength_withDeleted(obj) {
@@ -111,7 +126,11 @@ export class DataBase {
         await this.readQuery(query);
 
     }
+    async deleteNodeById(id, date) {
+        let query = 'match (n {end:0})-[r1{end:0}]->(a) where Id(n)='+id+' optional match (b)-[r2{end:0}]-> (n {end:0}) where id(n)='+id+' set n.end=' + date.valueOf() + ' ,r1.end=' + date.valueOf() + ',r2.end=' + date.valueOf();
+        await this.readQuery(query);
 
+    }
     async clear() {
         let deleteRelationQuery = 'Match ()-[r]->() delete r'
         let deleteNodeQuery = 'Match (a) delete a'
@@ -548,8 +567,10 @@ export function startGenerateToFile(numOfDays, component, keeper, marketPlace, e
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
-        //await componentManagment.addRandomNodesForAllComponents(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-
+        lists = componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+        Array.prototype.push.apply(addNodeList,lists[0])
+        console.log('added nodes:'+ addNodeList.length)
+        Array.prototype.push.apply(addRelationList,lists[1])
     }
     return [addNodeList, addRelationList]
 
@@ -581,11 +602,16 @@ export async function startDeleteOnline(numOfDays, component, keeper, marketPlac
 
 };
 
-export async function generateFromFile() {
-    var path = 'https://docs.google.com/spreadsheets/d/15UwVT5jCG1nXd2FFyoK2ZJYT2B73gI_xVsSYEyDFJ2k/export?format=csv';
+export async function generateFromFile(Nodefile,Relfile) {
+    //var path = 'https://docs.google.com/spreadsheets/d/1vRcgzL146o1J29rTwat4x9itu948OzSk/export?format=csv';
 
+    Nodefile='https://docs.google.com/spreadsheets/d/1H2IPDbLUoI_hDC7SBUMSuK9gjsVOihglXC3-dufQ71Y/export?format=csv'
+    Relfile='https://docs.google.com/spreadsheets/d/1AzM8dzzzAP4z_VptUwt92cioTSdQopFIRvJqOepCJO4/export?format=csv'
+
+    console.log('node:'+Nodefile)
+    console.log('rel:'+Relfile)
     var query = "load csv with headers from " +
-        "'" + path + "' as row\n" +
+        "'" + Nodefile + "' as row\n" +
         'call apoc.create.node([row.Label],' +
         '{ name:row.name, from:row.from,end:row.end, component:row.component}) \n' +
         'yield node return count(node)';
@@ -594,15 +620,18 @@ export async function generateFromFile() {
     console.log('adding nodes...')
     await dataBase.writeQuery(query);
     console.log('done adding nodes')
+    console.log('rel:'+Relfile)
+    query="load csv with headers from "
+                 +"' "+ Relfile + "' as row " +
+    'with row.source as source, row.target as target, row.relation as relation, row.from as from, row.end as end '+
+    'match (p {name: source}) '+
+    'match (m {name: target}) with p as source, m as target, relation as relation, from as from, end as end '+
+    'CALL apoc.merge.relationship(source, relation, {from:from,end:end},{}, target,{}) '+
+    'YIELD rel '+
+    'RETURN rel '
 
-    query='load csv with headers from \'https://docs.google.com/spreadsheets/d/11LsbRlJUvwVlMT1Btts6xQBVMPeszrzcewwE31arNvA/export?format=csv\' as row\n' +
-        'MATCH (p {name: row.source})\n' +
-        'MATCH (m\n' +
-        ' {name:row.target})\n' +
-        'CALL apoc.create.relationship(p, row.relation, {from:row.from,end:row.end}, m)\n' +
-        'YIELD rel\n' +
-        '\n' +
-        'RETURN rel'
+
+    console.log('query '+ query)
     console.log('adding relations...')
     await dataBase.writeQuery(query);
 
@@ -627,17 +656,17 @@ export async function startGenerateToDataBase(numOfDays, component, keeper, mark
             new Item('Component', numOfAdd);
         componentManagment.component = component2;
         await componentManagment.addCompleteComponentToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
-        console.log('added'+i-numOfDays+1+' day')
+       // console.log('added'+i-numOfDays+1+' day')
         let del = (numOfDelete === undefined) ? Math.round(component2.count / 2) : numOfDelete
         await componentManagment.deleteRandomComponent(del, date);
-        console.log('deleted'+i-numOfDays+1+' day')
+
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
         await componentManagment.addRandomNodesForAllComponentsToDataBase(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-        console.log('added'+i-numOfDays+1+' day')
+       // console.log('added'+i-numOfDays+1+' day')
         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
-        console.log('deleted'+i-numOfDays+1+' day')
+      //  console.log('deleted'+i-numOfDays+1+' day')
     }
     await database.close()
 

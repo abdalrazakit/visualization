@@ -9,7 +9,8 @@ import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import {Cluster, Dataset, FiltersState} from "../types";
 import Panel from "./Panel";
 import {InitForm} from "../helpers/InitForm";
-import {DataBase} from "../helpers/generateData";
+import {DataBase, Item} from "../helpers/generateData";
+import {log} from "util";
 
 let sourceNode: string | null = null;
 
@@ -26,18 +27,36 @@ const CommandsPanel: FC<{
         if (!selectedNode) return
         var atr = graph.getNodeAttributes(selectedNode);
         console.log("delete node")
+        const database=new DataBase();
+        console.log('node pro:'+selectedNode)
 
+         database.deleteNodeById(selectedNode,selectedDate)
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
         graph.dropNode(selectedNode)
         dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;
     }
 
-    function copyNode() {
+    async function copyNode() {
         if (!selectedNode) return
-
+        console.log('copy:'+selectedNode)
         var atr = graph.getNodeAttributes(selectedNode);
         console.log("copy node")
         console.log(atr)
+
+        var item= new Item(atr['cluster'],0,0)
+        var database= new DataBase();
+        var component=await database.getNodeComponentById(selectedNode)
+
+        var tempName=item.getNewName();
+        console.log('name='+ tempName)
+        await database.writeQuery(item.getCreatQuery(),{from:selectedDate,end:0,name:tempName,component:component})
+        const idForNewNode= await database.getNodeIdByName(tempName)
+        console.log('added with id: '+Number(idForNewNode))
+
+
+        // var key = storeNodeInNeo4J(node)  //todo
+
+
         var newNode = {
             cluster: atr["cluster"],
             clusterLabel: atr["clusterLabel"],
@@ -45,18 +64,18 @@ const CommandsPanel: FC<{
             image: atr["image"],
             size: atr["size"],
             hidden: atr["hidden"],
-            label: atr["clusterLabel"], //+ randomUUID(),
+            label: String( idForNewNode), //+ randomUUID(),
             x: toNumber(atr["x"]) + 1,
             y: toNumber(atr["y"]),
             fromTime: selectedDate,
             endTime: 0,
-            key: "0"
+            key:String( idForNewNode)
         };
-        // var key = storeNodeInNeo4J(node)  //todo
-        var key = "key"
-        newNode.key = key;
-        graph.addNode(key, newNode)
-        dataset.nodes[selectedDate][newNode.key] = newNode;
+
+        console.log('key:'+ newNode.key)
+        graph.addNode( String(idForNewNode), newNode)
+        if(idForNewNode)
+        dataset.nodes[selectedDate][String(idForNewNode)] = newNode;
 
 
     }

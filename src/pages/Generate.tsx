@@ -22,14 +22,15 @@ function Generate() {
     } = InitForm();
 
 
-    const changeHandler = (event) => {
-        setSelectedFile(event.target.files[0]);
-        event.target.files[0] && setIsFilePicked(true);
-    };
-    const handleSubmission = () => {
+    // const changeHandler = (event) => {
+    //     setSelectedFile(event.target.files[0]);
+    //     event.target.files[0] && setIsFilePicked(true);
+    // };
+    const handleSubmission =  async() => {
         // HANDLING FILE AS SENDING FILE INTO BACKEND
-
-        generateFromFile()
+        console.log('node:'+formData.nodeFile)
+        console.log('rel:'+formData.relFile)
+        await generateFromFile(formData.Nodefile,formData.Relfile)
     };
 
 
@@ -338,9 +339,9 @@ function Generate() {
                 </fieldset>}
                 {formData.type == 'fromFile' && <fieldset disabled={false}>
                     <label>Nodes URL: </label>
-                    <input type="url" name="Nodefile" onChange={changeHandler}/>
+                    <input type="url" name="nodeFile" />
                     <label>Relations URL: </label>
-                    <input type="url" name="Relfile" onChange={changeHandler}/>
+                    <input type="url" name="relFile" />
                     <div>
                         <button onClick={handleSubmission}>Submit</button>
                     </div>
