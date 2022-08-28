@@ -160,7 +160,7 @@ const MyGraph: FC = () => {
                                                selectedEdge={selectedEdge} selectedNode={selectedNode}/>
 
                             </div>
-                            (timeLabels &&
+
                             <div className={"timeline"}>
                                 <RangeSlider
                                     min={timeLabels ? new Date(timeLabels[0]).getTime() : 0}

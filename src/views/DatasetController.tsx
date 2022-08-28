@@ -1,6 +1,6 @@
 import {useSigma} from "react-sigma-v2";
 import {FC, useEffect} from "react";
-import {constant, keyBy, mapValues, omit, toNumber} from "lodash";
+import {constant, keyBy, mapValues, omit, parseInt, toNumber} from "lodash";
 import React from "react";
 
 import {Dataset, EdgeData, FiltersState, NodeData} from "../types";
@@ -112,6 +112,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                     notifier.complete()
                 }
 
+
                 const fetchResultsUsingReactiveDrivers = () =>
                     rxSession.readTransaction(tx => tx
                         .run(query, {})
@@ -129,19 +130,18 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         if (value && value.hasOwnProperty('labels')) {
                                             var comId = toNumber(value.properties.component.substr(9, 1))
                                             var {x, y} = calculateX_Y(comId);
-                                            if (value.identity == 2144)
-                                                console.log(value)
                                             var node = {
                                                 cluster: value.labels[0],
                                                 label: value.identity.toString(),
                                                 x: Math.random()  ,//* x + comId * x,
                                                 y: Math.random()  ,//* y + comId * y,
                                                 key: value.identity,
-                                                fromTime: value.properties.from,
-                                                endTime: value.properties.end
+                                                fromTime:parseInt( value.properties.from),
+                                                endTime: parseInt(value.properties.end)
                                             };
                                             if (node.fromTime != node.endTime) {
                                                 if (!dataset.nodes[node.fromTime][node.key]) {
+
                                                     if (node.fromTime == timeLabels[0]) {
                                                         try {
                                                             graph.addNode(node.key,
@@ -151,8 +151,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                                     "hidden": !filters[node.cluster],
                                                                     image: `${process.env.PUBLIC_URL}/images/${MyClusters[node.cluster].image}`,
                                                                 });
-                                                            if (node.key == 2144)
-                                                            console.log(node)
+
                                                         } catch (e) {
                                                             console.log("exx")
                                                         }
@@ -174,8 +173,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                 end: value.end,
                                                 label: value.type,
                                                 key: value.identity,
-                                                fromTime:  value.properties.from,
-                                                endTime: value.properties.end
+                                                fromTime:  parseInt(value.properties.from),
+                                                endTime: parseInt(value.properties.end)
                                             };
                                              if (edge.endTime != edge.fromTime) {
                                                  dataset.edges[edge.fromTime][edge.key]= edge;
@@ -188,6 +187,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
 
 
                                 })
+
 
                                 setDataset(dataset);
                                // setShowContents(true);
@@ -208,6 +208,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         }
                                     }
                                 });
+
                                 setDataset(dataset);
                                // setShowContents(true);
                                /// setDataReady(true);

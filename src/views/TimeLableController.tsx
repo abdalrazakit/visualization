@@ -13,7 +13,7 @@ const TimeLabelController: FC<{ setTimesLabels: (timeDataSet: any[]) => void, }>
 
             const database=new DataBase()
             const getData = async () => {
-                await database.readQuery("MATCH (n) return  DISTINCT n.from AS date union MATCH (n) where not n.end=0 return DISTINCT n.end AS date"
+                await database.readQuery("MATCH (n) return  DISTINCT n.from AS date union MATCH (n) where (not n.end='0') and ( not n.end=0)  return DISTINCT n.end AS date"
                     )
                     .then((result) => {
 

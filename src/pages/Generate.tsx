@@ -28,9 +28,7 @@ function Generate() {
     // };
     const handleSubmission =  async() => {
         // HANDLING FILE AS SENDING FILE INTO BACKEND
-        console.log('node:'+formData.nodeFile)
-        console.log('rel:'+formData.relFile)
-        await generateFromFile(formData.Nodefile,formData.Relfile)
+        await generateFromFile(formData.nodeFile,formData.relFile)
     };
 
 
@@ -339,9 +337,9 @@ function Generate() {
                 </fieldset>}
                 {formData.type == 'fromFile' && <fieldset disabled={false}>
                     <label>Nodes URL: </label>
-                    <input type="url" name="nodeFile" />
+                    <input type="text" onChange={handleChange} name="nodeFile" />
                     <label>Relations URL: </label>
-                    <input type="url" name="relFile" />
+                    <input type="text" onChange={handleChange} name="relFile" />
                     <div>
                         <button onClick={handleSubmission}>Submit</button>
                     </div>
@@ -351,7 +349,7 @@ function Generate() {
                 }
                 <button type="button" onClick={doGenerate} disabled={generatingState == 1}>Generate to database</button>
                 <button type="button" onClick={doGenerateToFile} disabled={generatingState ==1}>Generate to csv</button>
-                <button type="button" onClick={doClean}disabled={generatingState == 1|| generatingState == 3}>Clean DataBase</button>
+                <button type="button" onClick={doClean} >Clean DataBase</button>
 
 
             </div>

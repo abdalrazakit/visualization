@@ -126,34 +126,32 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
             if (previousDate > selectedDate) {
                 console.log("Go back")
                 var reversTimeLabel = timeLabels.slice().reverse()
+                    reversTimeLabel.forEach(function (val) {
+                        var index = val;
+                        if (index <= previousDate) {
+                            if (index <= selectedDate) // end;
+                                return;
 
-                //     reversTimeLabel.forEach(function (val) {
-                //         var index = val;
-                //         if (index <= previousDate) {
-                //             if (index <= selectedDate) // end;
-                //                 return;
-                //             console.log("day" + new Date(index).toLocaleDateString("en-us"))
-                //
-                //             dataset.edges[index].forEach((edge) => {
-                //                 if (edge.fromTime > selectedDate) {
-                //                     try {
-                //                         graph.dropEdge(edge.start, edge.end)
-                //                     } catch (e) {
-                //                     }
-                //                 }
-                //             });
-                //         }
-                //     });
+                            dataset.edges[index].forEach((edge) => {
+                                if (edge.fromTime == selectedDate) {
+                                    try {
+                                        graph.dropEdge(edge.start, edge.end)
+                                    } catch (e) {
+                                    }
+                                }
+                            });
+                        }
+                    });
 
                 reversTimeLabel.forEach(function (val) {
                     var index = val;
                     if (index <= previousDate) {
                         if (index <= selectedDate) // end;
                             return;
-                        console.log("day" + new Date(index).toLocaleDateString("en-us"))
                         dataset.nodes[index].forEach((node) => {
-                            if (node.fromTime > selectedDate) {
+                            if (node.fromTime == index) {
                                 try {
+                                    console.log("d" +node)
                                     graph.dropNode(node.key);
                                 } catch (e) {
                                     console.log("error in delete node")
@@ -162,17 +160,17 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         });
                     }
                 });
-                graph.clearEdges()
 
                 reversTimeLabel.forEach(function (val) {
                     var index = val;
                     if (index <= previousDate) {
-                        if (index < selectedDate) // end;
+                        if (index <= selectedDate) // end;
                             return;
-                        console.log("day" + new Date(index).toLocaleDateString("en-us"))
-                        dataset.nodes[index].forEach((node) => {
+                         dataset.nodes[index].forEach((node) => {
                             if (node.endTime == index && node.fromTime <= selectedDate) {
                                 try {
+                                    console.log("add" +node)
+
                                     graph.addNode(node.key,
                                         {
 
@@ -188,16 +186,13 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         });
                     }
                 });
+
+                graph.clearEdges()
                 reversTimeLabel.forEach(function (val) {
                     var index = val;
-                    if (index <= previousDate) {
-                        console.log("day" + new Date(index).toLocaleDateString("en-us"))
-                        console.log("day" + index)
+                    if (index <= selectedDate) {
                         dataset.edges[index].forEach((edge) => {
-                            console.log(edge.label + " | " + edge.fromTime + " | " + edge.endTime)
-                            if (edge.fromTime <= selectedDate) {
-                                console.log(edge.label)
-                                console.log("add edge")
+                            if (edge.fromTime == index && (edge.endTime > selectedDate || edge.endTime == 0)) {
                                 try {
                                     graph.addEdge(edge.start, edge.end)
                                 } catch (e) {

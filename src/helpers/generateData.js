@@ -323,9 +323,9 @@ export class ComponentManagment {
                     relationList.push(
                         {
                             source: marketName,
-                            source_Label: marketPlace.name,
+
                             relation: "managedBy",
-                            target_Label: exeManager.name,
+
                             target: exeManagerName,
                             from: date.valueOf(), end: 0
                         }
@@ -348,9 +348,9 @@ export class ComponentManagment {
                         relationList.push(
                             {
                                 source: exeManagerName,
-                                source_Label: exeManager.name,
+
                                 relation: "manages",
-                                target_Label: nodeExecutor.name,
+
                                 target: nodeExecutorName,
                                 from: date.valueOf(), end: 0
                             }
@@ -370,9 +370,9 @@ export class ComponentManagment {
                             relationList.push(
                                 {
                                     source: nodeExecutorName,
-                                    source_Label: nodeExecutor.name,
+
                                     relation: "has",
-                                    target_Label: assetManager.name,
+
                                     target: assetManagerName,
                                     from: date.valueOf(), end: 0
                                 }
@@ -397,9 +397,9 @@ export class ComponentManagment {
                 relationList.push(
                     {
                         source: keeperName,
-                        source_Label: keeper.name,
+
                         relation: "has",
-                        target_Label: searchEngine.name,
+
                         target: sEngName,
                         from: date.valueOf(), end: 0
                     }
@@ -528,38 +528,38 @@ export async function startDeleteOnline(numOfDays, component, keeper, marketPlac
 
 };
 
-export async function generateFromFile(Nodefile,Relfile) {
-    //var path = 'https://docs.google.com/spreadsheets/d/1vRcgzL146o1J29rTwat4x9itu948OzSk/export?format=csv';
+export async function generateFromFile(Nodefile1,Relfile1) {
 
-    Nodefile='https://docs.google.com/spreadsheets/d/1H2IPDbLUoI_hDC7SBUMSuK9gjsVOihglXC3-dufQ71Y/export?format=csv'
-    Relfile='https://docs.google.com/spreadsheets/d/1AzM8dzzzAP4z_VptUwt92cioTSdQopFIRvJqOepCJO4/export?format=csv'
+    var Nodefile='https://docs.google.com/spreadsheets/d/'+Nodefile1+'/export?format=csv'
+    var Relfile='https://docs.google.com/spreadsheets/d/'+Relfile1+'/export?format=csv'
 
     console.log('node:'+Nodefile)
     console.log('rel:'+Relfile)
-    var query = "load csv with headers from " +
+    var query = ":auto USING PERIODIC COMMIT load csv with headers from " +
         "'" + Nodefile + "' as row\n" +
         'call apoc.create.node([row.Label],' +
-        '{ name:row.name, from:row.from,end:row.end, component:row.component}) \n' +
+        '{ name:row.name, from:toInteger(row.from),end:toInteger(row.end), component:row.component}) \n' +
         'yield node return count(node)';
     let dataBase = new DataBase();
     console.log(query)
     console.log('adding nodes...')
     await dataBase.writeQuery(query);
+
     console.log('done adding nodes')
     console.log('rel:'+Relfile)
-    query="load csv with headers from "
-                 +"' "+ Relfile + "' as row " +
-    'with row.source as source, row.target as target, row.relation as relation, row.from as from, row.end as end '+
-    'match (p {name: source}) '+
-    'match (m {name: target}) with p as source, m as target, relation as relation, from as from, end as end '+
-    'CALL apoc.merge.relationship(source, relation, {from:from,end:end},{}, target,{}) '+
-    'YIELD rel '+
-    'RETURN rel '
+    query=":auto USING PERIODIC COMMIT load csv with headers from "
+        +"'"+ Relfile + "' as row " +
+        'match (p {name: row.source}) '+
+        'match (m {name: row.target}) '+
+        'CALL apoc.create.relationship(p, row.relation, {from:toInteger(row.from),end:toInteger(row.end)}, m) '+
+        'YIELD rel '+
+        'RETURN rel '
+
 
 
     console.log('query '+ query)
     console.log('adding relations...')
-    await dataBase.writeQuery(query);
+   // await dataBase.writeQuery(query);
 
     console.log('done adding relations')
  }
