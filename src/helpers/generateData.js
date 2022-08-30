@@ -418,8 +418,8 @@ export class ComponentManagment {
                 )
             }
         }
-
-
+         console.log('adding nodesss')
+         console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
     return [nodeList, relationList]
 
     }
@@ -431,14 +431,17 @@ export class ComponentManagment {
         for (let i = 0; i < component.count; i++) {
             let compName = component.getNewName();
             let lists= this.addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-
+            console.log('adding new component:')
+            console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
             nodeList=[...nodeList,...lists[0]]
             relationList=[...relationList,...lists[1]];
 
         }
+        console.log('after adding some complete components:')
+        console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
         return [nodeList, relationList]
     }
-    //for all valid components, add new random nodes (to list, csv file)
+    //for all valid components, add new random nodes to some random component (to list, csv file)
     async addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd) {
         if(deb) console.log('addRandomNodesForAllComponentsToList')
         let components = await this.getAllComponentName()//.getAllComponent_withoutDeleted();// NOT DELETED
@@ -450,11 +453,13 @@ export class ComponentManagment {
             let rand = Math.round(Math.random() * (len - 1));
             let compName = components.records[rand]._fields[0]//['properties'].name
             var lists = this. addCompleteComponentsToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-
+            console.log('adding new nodes for random components:')
+            console.log('new '+ lists[0].length +'nodes is ready and relation:'+lists[1].length)
             addedNodes=[...addedNodes,...lists[0]];
             addedRelations=[...addedRelations,...lists[1]];
         }
-
+        console.log('added new nodes for random components:')
+        console.log('new '+ addedNodes.length +'nodes is ready and relation:'+addedRelations.length)
         return  [addedNodes, addedRelations]
     }
     // delete random nodes (NOT by component name)
@@ -509,15 +514,15 @@ export async function startGenerateToFile(numOfDays, component, keeper, marketPl
         console.log('added nodes:'+ addNodeList.length)
         //Array.prototype.push.apply(addRelationList,lists[1])
         addRelationList=[...addRelationList,...lists[1]]
-        i -= 1;
-        if (i < 0) break;
-        date.setDate(date.getDate() + 1)
-        lists =await componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-
-        //Array.prototype.push.apply(addNodeList,lists[0])
-        addNodeList=[...addNodeList,...lists[0]]
-        console.log('added nodes:'+ addNodeList.length)
-        addRelationList=[...addRelationList,...lists[1]]
+        // i -= 1;
+        // if (i < 0) break;
+        // date.setDate(date.getDate() + 1)
+        // lists =await componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+        //
+        // //Array.prototype.push.apply(addNodeList,lists[0])
+        // addNodeList=[...addNodeList,...lists[0]]
+        // console.log('added nodes:'+ addNodeList.length)
+        // addRelationList=[...addRelationList,...lists[1]]
         //Array.prototype.push.apply(addRelationList,lists[1])
     }
 
@@ -571,14 +576,22 @@ export async function generateFromFile(Nodefile1,Relfile1) {
 
     console.log('done adding nodes')
     console.log('rel:'+Relfile)
-    query="load csv with headers from "
-        +"'"+ Relfile + "' as row " +
-        'match (p {name: row.source}) '+
-        'match (m {name: row.target}) '+
-        'CALL apoc.create.relationship(p, row.relation, {from:toInteger(row.from),end:toInteger(row.end)}, m) '+
-        'YIELD rel '+
-        'RETURN rel '
-
+    // query="load csv with headers from "
+    //     +"'"+ Relfile + "' as row " +
+    //     'match (p {name: row.source}) '+
+    //     'match (m {name: row.target}) '+
+    //     'CALL apoc.create.relationship(p, row.relation, {from:toInteger(row.from),end:toInteger(row.end)}, m) '+
+    //     'YIELD rel '+
+    //     'RETURN rel '
+    query= "CALL apoc.periodic.iterate(\n" +
+            "\"CALL apoc.load.csv('"+ Relfile+"') \n" +
+            "        YIELD map AS row RETURN row\", \n" +
+            "       \" match (p {name: row.source})\n" +
+            "        match (m {name: row.target}) \n" +
+            "        CALL apoc.create.relationship(p, row.relation,{from:toInteger(row.from),end:toInteger(row.end)}, m) \n" +
+            "        YIELD rel \n" +
+            "        RETURN rel\"\n" +
+            "        ,{batchSize:1});"
 
 
     console.log('query '+ query)
