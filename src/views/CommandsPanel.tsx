@@ -13,7 +13,8 @@ import {DataBase, Item} from "../helpers/generateData";
 import {log} from "util";
 
 let sourceNode: string | null = null;
-
+const clusters= [ "Keeper", "Marketplace", "SearchEngine", "ExecutionManager",
+         "NodeExecutor","AssetManager"]
 const CommandsPanel: FC<{
     dataset: Dataset, selectedDate: number, selectedNode: string | null, selectedEdge: string | null
 
@@ -32,6 +33,22 @@ const CommandsPanel: FC<{
 
          database.deleteNodeById(selectedNode,selectedDate)
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
+        let att1= graph.getNodeAttributes(selectedNode)
+        console.log(att1["cluster"])
+        let selNodeIndex=clusters.findIndex(n=> n==att1["cluster"])!
+        console.log('in'+selNodeIndex)
+        let nieg=graph.neighbors(selectedNode)
+        nieg.forEach(node=> {
+            let cl=graph.getNodeAttributes(node)["cluster"]
+            console.log('cl'+cl)
+            let index=clusters.findIndex(n=> n==cl)!
+            console.log(index)
+            if(index>selNodeIndex)
+            {
+                graph.setNodeAttribute(node, "color","black")
+            }
+
+        })
         graph.dropNode(selectedNode)
         dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;
     }
