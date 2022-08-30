@@ -116,10 +116,22 @@ export class DataBase {
     }
     //clear the database (delete all nodes and relations)
     async clear() {
-        let deleteRelationQuery = 'Match ()-[r]->() delete r'
-        let deleteNodeQuery = 'Match (a) delete a'
+        // let deleteRelationQuery ="CALL apoc.periodic.iterate( 'MATCH (n) RETURN id(n) AS id',"+
+        //     "'MATCH (n)  DELETE n' ,"+
+        //     "{batchSize: 5000})" //'Match ()-[r]->() delete r
+
+            let deleteNodeQuery =  "CALL apoc.periodic.iterate("+
+            "'MATCH ()-[r]->() RETURN id(r) AS id',"+
+            "'MATCH ()-[r]->() WHERE id(r)=id DELETE r',"+
+            "{batchSize: 5000});"
+        await this.writeQuery(deleteNodeQuery);
+        let deleteRelationQuery =
+        " CALL apoc.periodic.iterate("+
+        "    'MATCH (n) RETURN id(n) AS id',"+
+            "'MATCH (n) WHERE id(n)=id DELETE n',"+
+            "{batchSize: 5000});"
+
         await this.writeQuery(deleteRelationQuery);
-        await this.writeQuery(deleteNodeQuery)
     }
     //close the session
     async close() {
@@ -270,7 +282,7 @@ export class ComponentManagment {
             await this.addNodesByCompNameToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
         }
     }
-    async addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
+     addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         var nodeList = [];
         var relationList = [];
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
@@ -300,9 +312,9 @@ export class ComponentManagment {
                 relationList.push(
                     {
                         source: keeperName,
-                        source_Label: keeper.name,
+
                         relation: "has",
-                        target_Label: marketPlace.name,
+
                         target: marketName,
                         from: date.valueOf(), end: 0
 
@@ -407,19 +419,22 @@ export class ComponentManagment {
             }
         }
 
+
     return [nodeList, relationList]
 
     }
     //add complete components to the csv file (to list)
     addCompleteComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         if (deb) console.log('addCompleteComponentsToList')
-        var nodeList = [];
+        let nodeList =[];
         var relationList = [];
         for (let i = 0; i < component.count; i++) {
             let compName = component.getNewName();
-            var lists= this.addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            nodeList.push(lists[0])
-            relationList.push(lists[1]);
+            let lists= this.addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+
+            nodeList=[...nodeList,...lists[0]]
+            relationList=[...relationList,...lists[1]];
+
         }
         return [nodeList, relationList]
     }
@@ -428,17 +443,19 @@ export class ComponentManagment {
         if(deb) console.log('addRandomNodesForAllComponentsToList')
         let components = await this.getAllComponentName()//.getAllComponent_withoutDeleted();// NOT DELETED
         let len = components.records.length;
-        var addedNodes = null;
-        var addedRelations = null;
+        var addedNodes = [];
+        var addedRelations = [];
         let count = (numOfAdd === undefined) ? Math.round(Math.random() * (len - 1)) : numOfAdd;
         for (let i = 0; i < count; i++) {
             let rand = Math.round(Math.random() * (len - 1));
             let compName = components.records[rand]._fields[0]//['properties'].name
             var lists = this. addCompleteComponentsToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            addedNodes.concat(lists[0]);
-            addedRelations.concat(lists[1]);
+
+            addedNodes=[...addedNodes,...lists[0]];
+            addedRelations=[...addedRelations,...lists[1]];
         }
-        return [addedNodes, addedRelations]
+
+        return  [addedNodes, addedRelations]
     }
     // delete random nodes (NOT by component name)
     async deleteRandomNodes_NoComponent(date, numOfdelete) {
@@ -459,10 +476,10 @@ export class ComponentManagment {
 
 export async function clearDataBase() {
     let database = new DataBase();
-    database.clear();
+    await database.clear();
 }
 
-export function startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
+export async function startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
 
     var date = new Date(Date.now());
     date.setHours(0, 0, 0, 0);
@@ -486,56 +503,63 @@ export function startGenerateToFile(numOfDays, component, keeper, marketPlace, e
 
         componentManagment.component = component2;
        lists = componentManagment.addCompleteComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
-        Array.prototype.push.apply(addNodeList,lists[0])
+        //Array.prototype.push.apply(addNodeList,lists[0])
+
+        addNodeList=[...addNodeList,...lists[0]]
         console.log('added nodes:'+ addNodeList.length)
-        Array.prototype.push.apply(addRelationList,lists[1])
+        //Array.prototype.push.apply(addRelationList,lists[1])
+        addRelationList=[...addRelationList,...lists[1]]
         i -= 1;
         if (i < 0) break;
         date.setDate(date.getDate() + 1)
-        lists = componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-        Array.prototype.push.apply(addNodeList,lists[0])
+        lists =await componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+
+        //Array.prototype.push.apply(addNodeList,lists[0])
+        addNodeList=[...addNodeList,...lists[0]]
         console.log('added nodes:'+ addNodeList.length)
-        Array.prototype.push.apply(addRelationList,lists[1])
+        addRelationList=[...addRelationList,...lists[1]]
+        //Array.prototype.push.apply(addRelationList,lists[1])
     }
+
     return [addNodeList, addRelationList]
 
 };
-
-export async function startDeleteOnline(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
-
-    var date = new Date(Date.now());
-    date.setHours(0, 0, 0, 0);
-    date.setDate(1)
-
-    numOfDays -= 1;
-    let database = new DataBase();
-    var componentManagment = new ComponentManagment(database, component);
-
-    for (let i = numOfDays; i >= 0; i--) {
-        date.setDate(date.getDate() + 1)
-
-        let del = (numOfDelete === undefined) ? Math.round(component.count / 2) : numOfDelete
-        console.log('try deleteing')
-        await componentManagment.deleteRandomComponent(del, date);
-        i -= 1;
-        if (i < 0) break;
-        date.setDate(date.getDate() + 1)
-        await componentManagment.addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-        await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
-    }
-    await database.close()
-
-
-};
+//
+// export async function startDeleteOnline(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
+//
+//     var date = new Date(Date.now());
+//     date.setHours(0, 0, 0, 0);
+//     date.setDate(1)
+//
+//     numOfDays -= 1;
+//     let database = new DataBase();
+//     var componentManagment = new ComponentManagment(database, component);
+//
+//     for (let i = numOfDays; i >= 0; i--) {
+//         date.setDate(date.getDate() + 1)
+//
+//         let del = (numOfDelete === undefined) ? Math.round(component.count / 2) : numOfDelete
+//         console.log('try deleteing')
+//         await componentManagment.deleteRandomComponent(del, date);
+//         i -= 1;
+//         if (i < 0) break;
+//         date.setDate(date.getDate() + 1)
+//         await componentManagment.addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
+//         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
+//     }
+//     await database.close()
+//
+//
+// };
 
 export async function generateFromFile(Nodefile1,Relfile1) {
 
-    var Nodefile='https://docs.google.com/spreadsheets/d/'+Nodefile1+'/export?format=csv'
-    var Relfile='https://docs.google.com/spreadsheets/d/'+Relfile1+'/export?format=csv'
+    var Nodefile= 'file:///'+ Nodefile1//'https://docs.google.com/spreadsheets/d/'+Nodefile1+'/export?format=csv'
+    var Relfile='file:///'+Relfile1 // 'https://docs.google.com/spreadsheets/d/'+Relfile1+'/export?format=csv'
 
     console.log('node:'+Nodefile)
     console.log('rel:'+Relfile)
-    var query = ":auto USING PERIODIC COMMIT load csv with headers from " +
+    var query = "load csv with headers from " +
         "'" + Nodefile + "' as row\n" +
         'call apoc.create.node([row.Label],' +
         '{ name:row.name, from:toInteger(row.from),end:toInteger(row.end), component:row.component}) \n' +
@@ -547,7 +571,7 @@ export async function generateFromFile(Nodefile1,Relfile1) {
 
     console.log('done adding nodes')
     console.log('rel:'+Relfile)
-    query=":auto USING PERIODIC COMMIT load csv with headers from "
+    query="load csv with headers from "
         +"'"+ Relfile + "' as row " +
         'match (p {name: row.source}) '+
         'match (m {name: row.target}) '+
@@ -559,7 +583,7 @@ export async function generateFromFile(Nodefile1,Relfile1) {
 
     console.log('query '+ query)
     console.log('adding relations...')
-   // await dataBase.writeQuery(query);
+    await dataBase.writeQuery(query);
 
     console.log('done adding relations')
  }

@@ -108,10 +108,11 @@ function Generate() {
             let numOfDays = Math.round(Math.random() * 10);
             console.log('num of days on random generate:'+ numOfDays
             )
-             var lists = startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+             var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
              console.log(lists)
              nodesList = lists[0];
             relationsList=lists[1];
+            console.log(nodesList)
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
             let component = new Item("Component", formData.Component_min, formData.Component_max);
@@ -123,7 +124,7 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
 
-             var lists = startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+             var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
              console.log(lists)
              nodesList = lists[0];
             relationsList=lists[1];
@@ -140,7 +141,7 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
 
-            var lists = startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdit)
+            var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdit)
             console.log(lists)
             nodesList = lists[0];
             relationsList=lists[1];
