@@ -59,7 +59,7 @@ function Generate() {
             // nodesList = lists[0];
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
-            let component = new Item("Component", formData.Component_min, formData.Component_max);
+
             let keeper = new Item("Keeper", formData.Keeper_min, formData.Keeper_max);
             let marketPlace = new Item("Marketplace", formData.Marketplace_min, formData.Marketplace_max);
             let exeManager = new Item("ExecutionManager", formData.ExecutionManager_min, formData.ExecutionManager_max);
@@ -67,10 +67,9 @@ function Generate() {
             let assetManager = new Item('AssetManager', formData.AssetManager_min, formData.AssetManager_max);
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
-            await startGenerateToDataBase(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            // var lists = startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            // console.log(lists)
-            // nodesList = lists[0];
+            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
+
+
         } else if (formData.type == 'Logicly') {
             let component = new Item("Component", formData.NumOfComponent);
             let numOfKeeper4Component = Math.round(formData.NumOfKeeper / formData.NumOfComponent);
@@ -115,7 +114,6 @@ function Generate() {
             console.log(nodesList)
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
-            let component = new Item("Component", formData.Component_min, formData.Component_max);
             let keeper = new Item("Keeper", formData.Keeper_min, formData.Keeper_max);
             let marketPlace = new Item("Marketplace", formData.Marketplace_min, formData.Marketplace_max);
             let exeManager = new Item("ExecutionManager", formData.ExecutionManager_min, formData.ExecutionManager_max);
@@ -124,7 +122,7 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
 
-             var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+             var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
              console.log(lists)
              nodesList = lists[0];
             relationsList=lists[1];
@@ -177,20 +175,11 @@ function Generate() {
                 </fieldset>
                 {formData.type == 'Ranges' && <fieldset disabled={false}>
                     <div className="input-container">
-                        <label>Components: </label>
-                    </div>
-                    <div className="input-container">
-                        <label>Min: </label>
-                        <input type="number" name="Component_min" onChange={handleChange} step="1"
-                               value={formData.Component_min || ''}/>
-                        <label>Max: </label>
-                        <input type="number" name="Component_max" onChange={handleChange} step="1"
-                               value={formData.Component_max || ''}/>
+                        <label>For the first day add: </label>
                     </div>
                     <div className="input-container">
                         <label>Keepers: </label>
                     </div>
-
                     <div className="input-container">
                         <label>Min: </label>
                         <input type="number" name="Keeper_min" onChange={handleChange} step="1"
@@ -199,9 +188,20 @@ function Generate() {
                         <input type="number" name="Keeper_max" onChange={handleChange} step="1"
                                value={formData.Keeper_max || ''}/>
                     </div>
+                    <div className="input-container">
+                        <label>For each Keeper, the range of added SearchEngines: </label>
+                    </div>
 
                     <div className="input-container">
-                        <label>Marketplaces: </label>
+                        <label>Min: </label>
+                        <input type="number" name="SearchEngine_min" onChange={handleChange} step="1"
+                               value={formData.SearchEngine_min || ''}/>
+                        <label>Max: </label>
+                        <input type="number" name="SearchEngine_max" onChange={handleChange} step="1"
+                               value={formData.SearchEngine_max || ''}/>
+                    </div>
+                    <div className="input-container">
+                        <label>For each Keeper, the range of added Marketplaces: </label>
                     </div>
 
                     <div className="input-container">
@@ -214,7 +214,7 @@ function Generate() {
                     </div>
 
                     <div className="input-container">
-                        <label>ExecutionManagers: </label>
+                        <label>For each Marketplace, the range of added ExecutionManagers: </label>
                     </div>
 
                     <div className="input-container">
@@ -227,7 +227,7 @@ function Generate() {
                     </div>
 
                     <div className="input-container">
-                        <label>NodeExecutors: </label>
+                        <label>For each ExecutionManager, the range of added NodeExecutors: </label>
                     </div>
 
                     <div className="input-container">
@@ -240,7 +240,7 @@ function Generate() {
                     </div>
 
                     <div className="input-container">
-                        <label>AssetManagers: </label>
+                        <label>For each NodeExecutor, the range of added AssetManagers: </label>
                     </div>
 
                     <div className="input-container">
@@ -252,26 +252,34 @@ function Generate() {
                                value={formData.AssetManager_max || ''}/>
                     </div>
 
-                    <div className="input-container">
-                        <label>SearchEngines: </label>
-                    </div>
+
 
                     <div className="input-container">
-                        <label>Min: </label>
-                        <input type="number" name="SearchEngine_min" onChange={handleChange} step="1"
-                               value={formData.SearchEngine_min || ''}/>
-                        <label>Max: </label>
-                        <input type="number" name="SearchEngine_max" onChange={handleChange} step="1"
-                               value={formData.SearchEngine_max || ''}/>
-                    </div>
-
-                    <div className="input-container">
-                        <label>Number of days: </label>
+                        <label>The number of the next days: </label>
                     </div>
 
                     <div className="input-container">
                         <input type="number" name="DaysNumber" onChange={handleChange} step="1"
                                value={formData.DaysNumber || ''}/>
+                    </div>
+                    <div><label>For each day </label></div>
+                    <div className="input-container">
+                        <div>
+                        <label>Added nodes: </label>
+                        <input type="number" name="NumOfAdd" onChange={handleChange} step="1"
+                               value={formData.NumOfAdd || ''}/>
+                        <label>Deleted nodes: </label>
+                        <input type="number" name="NumOfDelete" onChange={handleChange} step="1"
+                               value={formData.NumOfDelete || ''}/>
+                        </div>
+                        <div>
+                        <label>Added edges: </label>
+                        <input type="number" name="NumOfEdgeAdd" onChange={handleChange} step="1"
+                               value={formData.NumOfEdgeAdd || ''}/>
+                        <label>Deleted edges: </label>
+                        <input type="number" name="NumOfEdgeDelete" onChange={handleChange} step="1"
+                               value={formData.NumOfEdgeDelete || ''}/>
+                        </div>
                     </div>
                 </fieldset>}
                 {formData.type == 'Logicly' && <fieldset disabled={false}>
@@ -324,6 +332,7 @@ function Generate() {
                                value={formData.DaysNumber || ''}/>
                     </div>
                     <div className="input-container">
+                        <label>for each day </label>
                         <label>Add: </label>
                         <input type="number" name="NumOfAdd" onChange={handleChange} step="1"
                                value={formData.NumOfAdd || ''}/>

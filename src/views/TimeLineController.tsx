@@ -34,7 +34,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
 
             var MyClusters = keyBy(dataset.clusters, "key");
 
- // delete all black coloer
+ // delete all black color
 
             graph.nodes().forEach((node) => {
                 graph.setNodeAttribute(node, "color", "#bbb")
@@ -134,7 +134,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                                 return;
 
                             dataset.edges[index].forEach((edge) => {
-                                if (edge.fromTime == selectedDate) {///?
+                                if (edge.fromTime == selectedDate) {
                                     try {
                                         graph.dropEdge(edge.start, edge.end)
                                     } catch (e) {

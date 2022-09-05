@@ -128,8 +128,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                     record.forEach((value, key) => {
                                         // if it's a node
                                         if (value && value.hasOwnProperty('labels')) {
-                                            var comId = toNumber(value.properties.component.substr(9, 1))
-                                            var {x, y} = calculateX_Y(comId);
+                                            // var comId = toNumber(value.properties.component.substr(9, 1))
+                                            // var {x, y} = calculateX_Y(comId);
                                             var node = {
                                                 cluster: value.labels[0],
                                                 label: value.identity.toString(),

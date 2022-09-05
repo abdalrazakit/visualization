@@ -25,12 +25,14 @@ const CommandsPanel: FC<{
     const database= new DataBase();
 
     function deleteNode() {
+        console.log(dataset )
         if (!selectedNode) return
         var atr = graph.getNodeAttributes(selectedNode);
         console.log("delete node")
         const database=new DataBase();
-        console.log('node pro:'+selectedNode)
-
+        console.log('the deleted node:'+selectedNode)
+        console.log('in the date:'+selectedDate)
+        console.log(new Date(selectedDate))
          database.deleteNodeById(selectedNode,selectedDate)
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
         let att1= graph.getNodeAttributes(selectedNode)
@@ -50,7 +52,10 @@ const CommandsPanel: FC<{
 
         })
         graph.dropNode(selectedNode)
-        dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;
+        //todo
+        // console.log(dataset.nodes[selectedNode] )
+        // dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;
+
     }
 
     async function copyNode() {
