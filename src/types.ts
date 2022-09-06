@@ -14,6 +14,7 @@ export interface EdgeData {
   label: string;
   fromTime:number
   endTime:number
+  key:string
 }
 
 export interface Cluster {

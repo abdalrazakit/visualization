@@ -27,10 +27,13 @@ const relationName=
         'ExecutionManager->NodeExecutor':'manages',
         'NodeExecutor-AssetManager>':'has'
     }
- class QueryManger{
+ export class QueryManger{
     static getCreatRelationById(source, target, relationName) {
-        return ' match (obj1) where id(obj1)='+source + ' match (obj2) where id(obj2)='+target + ' MERGE (obj1)-[:' + relationName + ' {from: $from, end:$end } ]->(obj2)'
+        return ' match (obj1) where id(obj1)='+source + ' match (obj2) where id(obj2)='+target + ' MERGE (obj1)-[r:' + relationName + ' {from: $from, end:$end } ]->(obj2) return id(r)'
     }
+     static getDeleteRelationById(id) {
+         return ' match ()-[r]->() where id(r)='+id + ' set r.end=$end  '
+     }
     static getCreatQueryByType(type) {
          return 'CREATE (k:'+ type +
              ' {name:"'+ this.getNewNameByType(type)+'", from: $from, end:$end }) return id(k)'
@@ -108,14 +111,8 @@ export class DataBase {
             return result.records[0]._fields[0]
         })
     }
-    //to get the component name of a node by id
-    async getNodeComponentById(id) {
-        var query='match (n) where id(n)='+id+' return n.component'
-        return await this.readQuery(query).then
-        ((result)=>{
-            console.log('1'+result.records[0]._fields[0])
-            return result.records[0]._fields[0]});
-    }
+
+
     getDriver() {return this.driver}
     //do a write query
     async writeQuery(query, par) {
@@ -157,11 +154,7 @@ export class DataBase {
     }
     //clear the database (delete all nodes and relations)
     async clear() {
-        // let deleteRelationQuery ="CALL apoc.periodic.iterate( 'MATCH (n) RETURN id(n) AS id',"+
-        //     "'MATCH (n)  DELETE n' ,"+
-        //     "{batchSize: 5000})" //'Match ()-[r]->() delete r
-
-            let deleteNodeQuery =  "CALL apoc.periodic.iterate("+
+       let deleteNodeQuery =  "CALL apoc.periodic.iterate("+
             "'MATCH ()-[r]->() RETURN id(r) AS id',"+
             "'MATCH ()-[r]->() WHERE id(r)=id DELETE r',"+
             "{batchSize: 5000});"
@@ -187,29 +180,6 @@ export class NodeManagement {
         this.database = database;
     }
 
-    ///todo test getAllNodesWithoutComponent
-    async getAllNodesWithoutDeletedNodes() {
-        //let query = 'Match (n) where (Not n:Component) and (n.end=0) return n'
-        let query = 'Match (n) where (n.end=0) return n'
-        return await this.database.readQuery(query)
-    }
-
-    //delete a complete random component with its nodes
-    async deleteRandomComponent(count, date) {
-        console.log('deleteRandomComponent(count, date)')
-        let components = await this.getAllComponentName()//getAllComponent_withoutDeleted();// NOT DELETED
-        let len = components.records.length
-
-        count = (count > len) ? len : count;
-        for (let i = 0; i < count; i++) {
-            let rand = Math.round(Math.random() * (len - 1));
-            console.log('deleteing component '+components.records[rand]._fields[0])
-            var componentName= components.records[rand]._fields[0]
-            await this.deleteCompleteComponent(componentName, date);
-        }
-
-    }
-    //get nodes ids by type and valid
     async getAllNodesIdByTypeDate(type,date)
     {
         let query='Match (n:'+type+') where (n.end>'+date.valueOf()+' or n.end=0 ) return Id(n)'
@@ -233,33 +203,30 @@ export class NodeManagement {
         console.log('done deleting')
         console.log(result)
     }
+    //with relation
     async addRandomNodesToDataBase(date,numOfAdd)
     {
         for (let i=0; i<numOfAdd;i++)
         {
-            //chose random type
+            //chose random type for the new node
             let index=Math.floor(Object.keys(chName).length* Math.random())
             let nType=Object.keys(chName)[index]
-            console.log('random index'+index )
-            console.log('type:'+ nType)
-            //parent type
+
+            //find the right parent type
             let pType=pName[nType];
-            console.log('parent type: '+pType)
 
             //child type
             let chType=null
             if(chName[nType]!=null)
             {
                 let i=Math.floor( Object.values(chName[nType]).length * Math.random())
-                let chType=chName[nType][i]
-                console.log('child type: '+chType)
+                chType=chName[nType][i]
             }
 
-            //add node
+            //add the new node
             let res= await this.database.writeQuery(QueryManger.getCreatQueryByType(nType),{from:date.valueOf(),end:0})
             let nodeId=res.records[0]._fields[0]
-            console.log('res')
-            console.log(nodeId)
+
             //adding Parent relation
             if(pType!=null) {
                 //choose random parent
@@ -268,112 +235,32 @@ export class NodeManagement {
                 if(pList.records.length>0) {
                     let i=Math.floor(pList.records.length* Math.random())
                     let pNodeId = pList.records[i]._fields[0]
-                    console.log('id='+ pNodeId)
+
                     //adding the relation
                     await this.database.writeQuery(QueryManger.getCreatRelationById(pNodeId,nodeId,
                         this.getRelationType(pType,nType)),{from:date.valueOf(),end:0})
-                    console.log('relation added')
+
+                }
+            }
+            //adding Child relation
+            console.log(chType)
+            if(chType!=null) {
+                //choose random parent
+                let pList= await this.getAllNodesIdByTypeDate(chType,date)
+
+                if(pList.records.length>0) {
+                    let i=Math.floor(pList.records.length* Math.random())
+                    let pNodeId = pList.records[i]._fields[0]
+
+                    //adding the relation
+                    await this.database.writeQuery(QueryManger.getCreatRelationById(nodeId,pNodeId,
+                        this.getRelationType(nType,chType)),{from:date.valueOf(),end:0})
+
                 }
             }
         }
     }
-    //for all valid components, add new random nodes
-    async addRandomNodesForAllComponentsToDataBase(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd) {
-        console.log('addRandomNodesForAllComponentsToDataBase')
-        let components = await this.getAllComponentName()// getAllComponent_withoutDeleted();// NOT DELETED
-        let len = components.records.length;
 
-        let count = (numOfAdd === undefined) ? Math.round(Math.random() * (len - 1)) : numOfAdd;
-
-        for (let i = 0; i < count; i++) {
-            let rand = Math.round(Math.random() * (len - 1));
-            let compName = components.records[rand]._fields[0]//['properties'].name
-
-            await this.addNodesByCompNameToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-
-        }
-    }
-    //add random nodes by component name
-    async addNodesByCompNameToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
-
-         for (let k = 0; k < keeper.count; k++)// keepers  for each component
-        {
-            let keeperName = keeper.getNewName();
-            await this.database.writeQuery(keeper.getCreatQuery(), {
-                name: keeperName,
-                from: date.valueOf(),
-                end: 0,
-                component: compName
-            })
-            //no relation between component and keeper
-            // await this.database.writeQuery(component.getCreatRelationWith(compName, keeper.name, keeperName, "contains"),
-            //     {from: date.valueOf(), end: 0})
-            for (let m = 0; m < marketPlace.count; m++)// market
-            {
-                let marketName = marketPlace.getNewName();
-                await this.database.writeQuery(marketPlace.getCreatQuery(), {
-                    name: marketName,
-                    from: date.valueOf(),
-                    end: 0,
-                    component: compName
-                })
-                await this.database.writeQuery(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"), {
-                    from: date.valueOf(), end: 0
-                })
-                //generate execution manager
-                for (let e = 0; e < exeManager.count; e++) {
-                    let exeManagerName = exeManager.getNewName();
-                    await this.database.writeQuery(exeManager.getCreatQuery(), {
-                        name: exeManagerName, from: date.valueOf(), end: 0, component: compName
-                    })
-                    await this.database.writeQuery(marketPlace.getCreatRelationWith(marketName, exeManager.name, exeManagerName, "manageBy"), {
-                        from: date.valueOf(), end: 0
-                    })
-                    ////// creat nodeExecutor
-                    for (let e = 0; e < nodeExecutor.count; e++) {
-                        let nodeExecutorName = nodeExecutor.getNewName();
-                        await this.database.writeQuery(nodeExecutor.getCreatQuery(), {
-                            name: nodeExecutorName, from: date.valueOf(), end: 0, component: compName
-                        })
-                        await this.database.writeQuery(exeManager.getCreatRelationWith(exeManagerName, nodeExecutor.name, nodeExecutorName, "manages"), {
-                            from: date.valueOf(), end: 0
-                        })
-                        ////// creat assetManager
-                        for (let e = 0; e < assetManager.count; e++) {
-                            let assetManagerName = assetManager.getNewName();
-                            await this.database.writeQuery(assetManager.getCreatQuery(), {
-                                name: assetManagerName, from: date.valueOf(), end: 0, component: compName
-                            })
-                            await this.database.writeQuery(nodeExecutor.getCreatRelationWith(nodeExecutorName, assetManager.name, assetManagerName, "has"), {
-                                from: date.valueOf(), end: 0
-                            })
-
-                        }
-                    }
-                }
-            }
-
-            for (let s = 0; s < searchEngine.count; s++)
-            {
-                let sEngName = searchEngine.getNewName();
-                await this.database.writeQuery(searchEngine.getCreatQuery(), {
-                    name: sEngName, from: date.valueOf(), end: 0, component: compName
-                })
-                await this.database.writeQuery(keeper.getCreatRelationWith(keeperName, searchEngine.name, sEngName, 'has'), {
-                    from: date.valueOf(), end: 0
-                })
-            }
-        }
-    }
-    //add num of complete components to the database
-    async addCompleteComponentsToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
-        if(deb) console.log('addCompleteComponentsToDataBase')
-        let component = this.component
-        for (let i = 0; i < component.count; i++) {
-            let compName = component.getNewName();
-            await this.addNodesByCompNameToDataBase(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-        }
-    }
     async addCompleteDayToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         if(deb) console.log('addCompleteDayToDataBase')
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
@@ -442,7 +329,7 @@ export class NodeManagement {
         }
 
     }
-     addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
+     addCompleteDayToList(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         var nodeList = [];
         var relationList = [];
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
@@ -454,7 +341,6 @@ export class NodeManagement {
                     name: keeperName,
                     from: date.valueOf(),
                     end: 0,
-                    component: compName
                 }
             )
             for (let m = 0; m < marketPlace.count; m++)// market
@@ -466,18 +352,14 @@ export class NodeManagement {
                         name: marketName,
                         from: date.valueOf(),
                         end: 0,
-                        component: compName
                     }
                 )
                 relationList.push(
                     {
                         source: keeperName,
-
                         relation: "has",
-
                         target: marketName,
                         from: date.valueOf(), end: 0
-
                     }
                 )
                 //generate execution manager
@@ -489,15 +371,12 @@ export class NodeManagement {
                             name: exeManagerName,
                             from: date.valueOf(),
                             end: 0,
-                            component: compName
                         }
                     )
                     relationList.push(
                         {
                             source: marketName,
-
                             relation: "managedBy",
-
                             target: exeManagerName,
                             from: date.valueOf(), end: 0
                         }
@@ -506,23 +385,18 @@ export class NodeManagement {
                     ////// creat nodeExecutor
                     for (let e = 0; e < nodeExecutor.count; e++) {
                         let nodeExecutorName = nodeExecutor.getNewName();
-
-
                         nodeList.push(
                             {
                                 Label: nodeExecutor.name,
                                 name: nodeExecutorName,
                                 from: date.valueOf(),
-                                end: 0,
-                                component: compName
+                                end: 0
                             }
                         )
                         relationList.push(
                             {
                                 source: exeManagerName,
-
                                 relation: "manages",
-
                                 target: nodeExecutorName,
                                 from: date.valueOf(), end: 0
                             }
@@ -536,15 +410,12 @@ export class NodeManagement {
                                     name: assetManagerName,
                                     from: date.valueOf(),
                                     end: 0,
-                                    component: compName
                                 }
                             )
                             relationList.push(
                                 {
                                     source: nodeExecutorName,
-
                                     relation: "has",
-
                                     target: assetManagerName,
                                     from: date.valueOf(), end: 0
                                 }
@@ -553,8 +424,7 @@ export class NodeManagement {
                     }
                 }
             }
-
-            for (let s = 0; s < searchEngine.count; s++)// 3
+            for (let s = 0; s < searchEngine.count; s++)
             {
                 let sEngName = searchEngine.getNewName();
                 nodeList.push(
@@ -563,79 +433,23 @@ export class NodeManagement {
                         name: sEngName,
                         from: date.valueOf(),
                         end: 0,
-                        component: compName
                     }
                 )
                 relationList.push(
                     {
                         source: keeperName,
-
                         relation: "has",
-
                         target: sEngName,
                         from: date.valueOf(), end: 0
                     }
                 )
             }
         }
-         console.log('adding nodesss')
-         console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
     return [nodeList, relationList]
 
     }
-    //add complete components to the csv file (to list)
-    addCompleteComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
-        if (deb) console.log('addCompleteComponentsToList')
-        let nodeList =[];
-        var relationList = [];
-        for (let i = 0; i < component.count; i++) {
-            let compName = component.getNewName();
-            let lists= this.addNodesByCompNameToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            console.log('adding new component:')
-            console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
-            nodeList=[...nodeList,...lists[0]]
-            relationList=[...relationList,...lists[1]];
 
-        }
-        console.log('after adding some complete components:')
-        console.log('new '+ nodeList.length +'nodes is ready and relation:'+relationList.length)
-        return [nodeList, relationList]
-    }
-    //for all valid components, add new random nodes to some random component (to list, csv file)
-    async addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd) {
-        if(deb) console.log('addRandomNodesForAllComponentsToList')
-        let components = await this.getAllComponentName()//.getAllComponent_withoutDeleted();// NOT DELETED
-        let len = components.records.length;
-        var addedNodes = [];
-        var addedRelations = [];
-        let count = (numOfAdd === undefined) ? Math.round(Math.random() * (len - 1)) : numOfAdd;
-        for (let i = 0; i < count; i++) {
-            let rand = Math.round(Math.random() * (len - 1));
-            let compName = components.records[rand]._fields[0]//['properties'].name
-            var lists = this. addCompleteComponentsToList(date, compName, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            console.log('adding new nodes for random components:')
-            console.log('new '+ lists[0].length +'nodes is ready and relation:'+lists[1].length)
-            addedNodes=[...addedNodes,...lists[0]];
-            addedRelations=[...addedRelations,...lists[1]];
-        }
-        console.log('added new nodes for random components:')
-        console.log('new '+ addedNodes.length +'nodes is ready and relation:'+addedRelations.length)
-        return  [addedNodes, addedRelations]
-    }
-    // delete random nodes (NOT by component name)
-    async deleteRandomNodes_NoComponent(date, numOfdelete) {
-        let nodes = await this.getAllNodesWithoutDeletedNodes();
-        let len = nodes.records.length;
-        let countToDelete = (numOfdelete === undefined) ?
-            Math.random() * (len - 1) :
-            numOfdelete;
-        for (let i = 0; i < countToDelete; i++) {
-            let rand = Math.round(Math.random() * (len - 1))
-            let name = nodes.records[rand]._fields[0]['properties'].name
-            await this.database.deleteNode(name, date);
-        }
 
-    }
 
 }
 
@@ -644,78 +458,32 @@ export async function clearDataBase() {
     await database.clear();
 }
 
-export async function startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
+export async function startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
 
     var date = new Date(Date.now());
     date.setHours(0, 0, 0, 0);
-    date.setDate(1)
 
-    numOfDays -= 1;
+    var nodeManagement = new NodeManagement();
 
-    let database = new DataBase();
 
-    var componentManagment = new NodeManagement(database, component);
-    var lists = componentManagment.addCompleteComponentsToList(date, component,
+    var lists = nodeManagement.addCompleteDayToList(date,
         keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
 
     var addNodeList = lists[0];
     var addRelationList = lists[1];
-    console.log('added nodes1:'+ addNodeList.length)
-    for (let i = numOfDays; i >= 0; i--) {
-        date.setDate(date.getDate() + 1)
-        let component2 = (numOfAdd === undefined) ? new Item('Component', component.min / 2, component.max / 2) :
-            new Item('Component', numOfAdd);
 
-        componentManagment.component = component2;
-       lists = componentManagment.addCompleteComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine);
-        //Array.prototype.push.apply(addNodeList,lists[0])
 
+    for (let i = numOfDays;  i > 0;i--) {
+        date=date.addDays(1)
+        lists =  await nodeManagement.addCompleteDayToList(date,keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
         addNodeList=[...addNodeList,...lists[0]]
-        console.log('added nodes:'+ addNodeList.length)
-        //Array.prototype.push.apply(addRelationList,lists[1])
         addRelationList=[...addRelationList,...lists[1]]
-        // i -= 1;
-        // if (i < 0) break;
-        // date.setDate(date.getDate() + 1)
-        // lists =await componentManagment.addRandomNodesForAllComponentsToList(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-        //
-        // //Array.prototype.push.apply(addNodeList,lists[0])
-        // addNodeList=[...addNodeList,...lists[0]]
-        // console.log('added nodes:'+ addNodeList.length)
-        // addRelationList=[...addRelationList,...lists[1]]
-        //Array.prototype.push.apply(addRelationList,lists[1])
     }
 
     return [addNodeList, addRelationList]
 
 };
-//
-// export async function startDeleteOnline(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfAdd, numOfDelete, numOfEdit) {
-//
-//     var date = new Date(Date.now());
-//     date.setHours(0, 0, 0, 0);
-//     date.setDate(1)
-//
-//     numOfDays -= 1;
-//     let database = new DataBase();
-//     var componentManagment = new ComponentManagment(database, component);
-//
-//     for (let i = numOfDays; i >= 0; i--) {
-//         date.setDate(date.getDate() + 1)
-//
-//         let del = (numOfDelete === undefined) ? Math.round(component.count / 2) : numOfDelete
-//         console.log('try deleteing')
-//         await componentManagment.deleteRandomComponent(del, date);
-//         i -= 1;
-//         if (i < 0) break;
-//         date.setDate(date.getDate() + 1)
-//         await componentManagment.addRandomNodesForAllComponentsToList(date, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-//         await componentManagment.deleteRandomNodes_NoComponent(date, numOfEdit);
-//     }
-//     await database.close()
-//
-//
-// };
+
 
 export async function generateFromFile(Nodefile1,Relfile1) {
 
@@ -785,11 +553,7 @@ export async function startGenerateToDataBase(numOfDays, keeper, marketPlace, ex
        //
        //  await nodeManagement.addRandomEdgesToDataBase(date,numOfAdd)
        //  await nodeManagement.deleteRandomEdgesToDataBase(date,numOfAdd)
-       //
-       //  await nodeManagement.addRandomNodesForAllComponentsToDataBase(date, component2, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, numOfEdit)
-       // // console.log('added'+i-numOfDays+1+' day')
-       //  await nodeManagement.deleteRandomNodes_NoComponent(date, numOfEdit);
-      //  console.log('deleted'+i-numOfDays+1+' day')
+
     }
     await database.close()
 

@@ -22,7 +22,7 @@ const LineChartController: FC<{  timeLabels: any[], setChartData: (any) => void 
 
         useEffect(() => {
             var backgroundColor = [
-                'rgb(255, 99, 132)',
+
                 'rgb(255, 159, 64)',
                 'rgb(255, 205, 86)',
                 'rgb(75, 192, 192)',
@@ -30,41 +30,44 @@ const LineChartController: FC<{  timeLabels: any[], setChartData: (any) => void 
                 'rgb(153, 102, 255)',
                 'rgb(201, 203, 207)'
             ]
-            var items = ['Component', 'Marketplace', 'AssetManager', 'ExecutionManager', 'Keeper', 'SearchEngine', 'NodeExecutor']
+            var items = [ 'MarketPlace', 'AssetManager', 'ExecutionManager', 'Keeper', 'SearchEngine', 'NodeExecutor']
             var datasets = [{}]
 
             const getData = async () => {
-                console.log("time lable:" + timeLabels)
+
                 if (timeLabels == null) return
 
                 for (let item = 0; item < items.length; item++) {
                     var datapoints: any = [];
                     for (let i = 0; i < timeLabels.length; i++) {
                         var time = timeLabels[i];
-                        console.log('time='
-                            + time)
                         var query = "match (n:" + items[item] + ") where( (n.from<=" + time + ") and (n.end>" + time + " or n.end=0)) return count(n)";
-                        console.log(query)
+
                         const dataForTime = await database.readQuery(query)
                             .then((result) => {
                                 datapoints.push(result.records[0]._fields[0]);
-                                console.log("datapoints:" + datapoints.values)
+
                             })
                     }
-                    console.log("items[item]" + items[item])
+
                     datasets.push({
                         label: items[item],
                         data: datapoints,
                         borderColor: backgroundColor[item],
                         backgroundColor: backgroundColor[item]
                     })
-                    console.log('data' + datasets)
+
 
                 }
-                console.log("end")
+                let times:any[] = []
+                for (let i = 0; i < timeLabels.length; i++) {
 
+                    var d = new Date(timeLabels[i])
+                    times.push(d.toDateString())
+                }
+                console.log(times)
                 setChartData({
-                    labels: timeLabels,
+                    labels: times,
                     datasets: datasets
                 });
             }

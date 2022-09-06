@@ -45,7 +45,7 @@ const MyGraph: FC = () => {
 
     const [dataReady, setDataReady] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState(0);
-    const [timeLabels, setTimeLabels] = useState<any[] | null>(null);
+    const [ timeLabels, setTimeLabels] = useState<any[] | null>(null);
     const [dataset, setDataset] = useState<Dataset | null>(null);
     const [filtersState, setFiltersState] = useState<FiltersState>({
         clusters: {},

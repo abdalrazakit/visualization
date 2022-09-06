@@ -168,6 +168,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                         }
                                         // if it's an edge
                                         if (value && value.hasOwnProperty('type')) {
+
                                             var edge = {
                                                 start: value.start,
                                                 end: value.end,

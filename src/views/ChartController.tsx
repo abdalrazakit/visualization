@@ -18,7 +18,7 @@ const ChartController: FC<{  timeLabels: any[], setChartData: (any) => void }> =
          var database= new DataBase();
         useEffect(() => {
             var backgroundColor = [
-                'rgb(255, 99, 132)',
+
                 'rgb(255, 159, 64)',
                 'rgb(255, 205, 86)',
                 'rgb(75, 192, 192)',
@@ -40,7 +40,7 @@ const ChartController: FC<{  timeLabels: any[], setChartData: (any) => void }> =
                         "match (node) where node.end=" + time + " return {label:'delete', count: count(node)} as info UNION ALL " +
                         "match (node) where node.from=" + time + " return {label:'add', count: count(node)} as info")
                         .then((result) => {
-                             datapointsDELETE.push(result.records[0]._fields[0]['count'] * -1);
+                            datapointsDELETE.push(result.records[0]._fields[0]['count'] * -1);
                             datapointsADD.push(result.records[1]._fields[0]['count']);
                         })
                 }
@@ -58,8 +58,14 @@ const ChartController: FC<{  timeLabels: any[], setChartData: (any) => void }> =
                     backgroundColor: backgroundColor[1]
 
                 })
+                let times:any[] = []
+                for (let i = 0; i < timeLabels.length; i++) {
+
+                    var d = new Date(timeLabels[i])
+                    times.push(d.toDateString())
+                }
                 setChartData({
-                    labels: timeLabels,
+                    labels: times,
                     datasets: datasets
                 });
 

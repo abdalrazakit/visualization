@@ -45,7 +45,7 @@ function Generate() {
     const doGenerate = async event => {
         setGeneratingState(1);
         if (formData.type == 'Random') {
-            let component = new Item("Component", 1, 5);
+
             let keeper = new Item("Keeper", 1, 5);
             let marketPlace = new Item("Marketplace", 1, 5);
             let exeManager = new Item("ExecutionManager", 1, 5);
@@ -53,10 +53,8 @@ function Generate() {
             let assetManager = new Item('AssetManager', 1, 5);
             let searchEngine = new Item("SearchEngine", 1, 5);
             let numOfDays = Math.round(Math.random() * 10);
-            await startGenerateToDataBase(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            // var lists = startGenerate(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-            // console.log(lists)
-            // nodesList = lists[0];
+            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine,Math.round(Math.random() * 10),Math.round(Math.random() * 10) )
+
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
 
@@ -67,12 +65,12 @@ function Generate() {
             let assetManager = new Item('AssetManager', formData.AssetManager_min, formData.AssetManager_max);
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
-            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
+            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete)//, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
 
 
         } else if (formData.type == 'Logicly') {
-            let component = new Item("Component", formData.NumOfComponent);
-            let numOfKeeper4Component = Math.round(formData.NumOfKeeper / formData.NumOfComponent);
+
+            let numOfKeeper4Component = Math.round(formData.NumOfKeeper );
             let keeper = new Item("Keeper", numOfKeeper4Component);
             let numOfMarketplace4Keeper = Math.round(formData.NumOfMarketplace / formData.NumOfKeeper);
             let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
@@ -83,7 +81,7 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
 
-            await startGenerateToDataBase(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdit)
+            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd,formData.NumOfDelete,)//,  formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
         } else if (formData.type == 'fromFile') {
 
         }
@@ -97,7 +95,7 @@ function Generate() {
     const doGenerateToFile = async event => {
         setGeneratingState(1);
         if (formData.type == 'Random') {
-            let component = new Item("Component", 1, 5);
+
             let keeper = new Item("Keeper", 1, 5);
             let marketPlace = new Item("Marketplace", 1, 5);
             let exeManager = new Item("ExecutionManager", 1, 5);
@@ -107,11 +105,11 @@ function Generate() {
             let numOfDays = Math.round(Math.random() * 10);
             console.log('num of days on random generate:'+ numOfDays
             )
-             var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-             console.log(lists)
+             var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
+
              nodesList = lists[0];
             relationsList=lists[1];
-            console.log(nodesList)
+
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
             let keeper = new Item("Keeper", formData.Keeper_min, formData.Keeper_max);
@@ -122,13 +120,13 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
 
-             var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
-             console.log(lists)
+             var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd)//, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
+
              nodesList = lists[0];
             relationsList=lists[1];
         } else if (formData.type == 'Logicly') {
-            let component = new Item("Component", formData.NumOfComponent);
-            let numOfKeeper4Component = Math.round(formData.NumOfKeeper / formData.NumOfComponent);
+
+            let numOfKeeper4Component = Math.round(formData.NumOfKeeper);
             let keeper = new Item("Keeper", numOfKeeper4Component);
             let numOfMarketplace4Keeper = Math.round(formData.NumOfMarketplace / formData.NumOfKeeper);
             let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
@@ -139,7 +137,7 @@ function Generate() {
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
 
-            var lists = await startGenerateToFile(numOfDays, component, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete, formData.NumOfEdit)
+            var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd)//, formData.NumOfDelete, formData.NumOfEdit)
             console.log(lists)
             nodesList = lists[0];
             relationsList=lists[1];
@@ -272,22 +270,17 @@ function Generate() {
                         <input type="number" name="NumOfDelete" onChange={handleChange} step="1"
                                value={formData.NumOfDelete || ''}/>
                         </div>
-                        <div>
-                        <label>Added edges: </label>
-                        <input type="number" name="NumOfEdgeAdd" onChange={handleChange} step="1"
-                               value={formData.NumOfEdgeAdd || ''}/>
-                        <label>Deleted edges: </label>
-                        <input type="number" name="NumOfEdgeDelete" onChange={handleChange} step="1"
-                               value={formData.NumOfEdgeDelete || ''}/>
-                        </div>
+                        {/*<div>*/}
+                        {/*<label>Added edges: </label>*/}
+                        {/*<input type="number" name="NumOfEdgeAdd" onChange={handleChange} step="1"*/}
+                        {/*       value={formData.NumOfEdgeAdd || ''}/>*/}
+                        {/*<label>Deleted edges: </label>*/}
+                        {/*<input type="number" name="NumOfEdgeDelete" onChange={handleChange} step="1"*/}
+                        {/*       value={formData.NumOfEdgeDelete || ''}/>*/}
+                        {/*</div>*/}
                     </div>
                 </fieldset>}
                 {formData.type == 'Logicly' && <fieldset disabled={false}>
-                    <div className="input-container">
-                        <label>Components: </label>
-                        <input type="number" name="NumOfComponent" onChange={handleChange} step="1"
-                               value={formData.NumOfComponent || ''}/>
-                    </div>
 
                     <div className="input-container">
                         <label>Keepers: </label>
@@ -295,53 +288,76 @@ function Generate() {
                                value={formData.NumOfKeeper || ''}/>
                     </div>
 
-
                     <div className="input-container">
-                        <label>Marketplaces: </label>
-                        <input type="number" name="NumOfMarketplace" onChange={handleChange} step="1"
-                               value={formData.NumOfMarketplace || ''}/>
-                    </div>
-
-                    <div className="input-container">
-                        <label>ExecutionManagers: </label>
-                        <input type="number" name="NumOfExecutionManager" onChange={handleChange} step="1"
-                               value={formData.NumOfExecutionManager || ''}/>
-                    </div>
-
-                    <div className="input-container">
-                        <label>NodeExecutors: </label>
-                        <input type="number" name="NumOfNodeExecutor" onChange={handleChange} step="1"
-                               value={formData.NumOfNodeExecutor || ''}/>
-                    </div>
-
-                    <div className="input-container">
-                        <label>AssetManagers: </label>
-                        <input type="number" name="NumOfAssetManager" onChange={handleChange} step="1"
-                               value={formData.NumOfAssetManager || ''}/>
-                    </div>
-
-                    <div className="input-container">
-                        <label>SearchEngines: </label>
+                        <label>SearchEngines for all Keepers: </label><div>
                         <input type="number" name="NumOfSearchEngine" onChange={handleChange} step="1"
                                value={formData.NumOfSearchEngine || ''}/>
+                        <label>For each keeper ({(formData.NumOfSearchEngine/formData.NumOfKeeper )}) SearchEngines</label>
+                    </div>
                     </div>
 
                     <div className="input-container">
-                        <label>Number of days: </label>
+                        <label>Marketplaces for all Keepers: </label>
+                        <div><input type="number" name="NumOfMarketplace" onChange={handleChange} step="1"
+                               value={formData.NumOfMarketplace || ''}/>
+                            <label>For each keeper ({(formData.NumOfMarketplace/formData.NumOfKeeper )}) Marketplaces</label>
+                        </div>
+                    </div>
+
+                    <div className="input-container">
+                        <label>ExecutionManagers for all Marketplaces: </label>
+                        <div>
+                        <input type="number" name="NumOfExecutionManager" onChange={handleChange} step="1"
+                               value={formData.NumOfExecutionManager || ''}/>
+                            <label>For each Marketplace ({(formData.NumOfExecutionManager/formData.NumOfMarketplace )}) ExecutionManagers</label>
+                        </div>
+                    </div>
+
+                    <div className="input-container">
+                        <label>NodeExecutors for all ExecutionManagers: </label>
+                        <div>
+                        <input type="number" name="NumOfNodeExecutor" onChange={handleChange} step="1"
+                               value={formData.NumOfNodeExecutor || ''}/>
+                            <label>For each ExecutionManagers ({(formData.NumOfNodeExecutor/formData.NumOfExecutionManager )}) NodeExecutors</label>
+                        </div>
+                    </div>
+
+                    <div className="input-container">
+                        <label>AssetManagers for all NodeExecutors: </label>
+                        <div>
+                        <input type="number" name="NumOfAssetManager" onChange={handleChange} step="1"
+                               value={formData.NumOfAssetManager || ''}/>
+                            <label>For each NodeExecutors ({(formData.NumOfAssetManager/formData.NumOfNodeExecutor )}) AssetManagers</label>
+                        </div>
+                    </div>
+
+
+                    <div className="input-container">
+                        <label>The number of the next days: </label>
+                    </div>
+
+                    <div className="input-container">
                         <input type="number" name="DaysNumber" onChange={handleChange} step="1"
                                value={formData.DaysNumber || ''}/>
                     </div>
+                    <div><label>For each day </label></div>
                     <div className="input-container">
-                        <label>for each day </label>
-                        <label>Add: </label>
-                        <input type="number" name="NumOfAdd" onChange={handleChange} step="1"
-                               value={formData.NumOfAdd || ''}/>
-                        <label>Delete: </label>
-                        <input type="number" name="NumOfDelete" onChange={handleChange} step="1"
-                               value={formData.NumOfDelete || ''}/>
-                        <label>Edit: </label>
-                        <input type="number" name="NumOfEdit" onChange={handleChange} step="1"
-                               value={formData.NumOfEdit || ''}/>
+                        <div>
+                            <label>Added nodes: </label>
+                            <input type="number" name="NumOfAdd" onChange={handleChange} step="1"
+                                   value={formData.NumOfAdd || ''}/>
+                            <label>Deleted nodes: </label>
+                            <input type="number" name="NumOfDelete" onChange={handleChange} step="1"
+                                   value={formData.NumOfDelete || ''}/>
+                        </div>
+                        {/*<div>*/}
+                        {/*    <label>Added edges: </label>*/}
+                        {/*    <input type="number" name="NumOfEdgeAdd" onChange={handleChange} step="1"*/}
+                        {/*           value={formData.NumOfEdgeAdd || ''}/>*/}
+                        {/*    <label>Deleted edges: </label>*/}
+                        {/*    <input type="number" name="NumOfEdgeDelete" onChange={handleChange} step="1"*/}
+                        {/*           value={formData.NumOfEdgeDelete || ''}/>*/}
+                        {/*</div>*/}
                     </div>
 
                 </fieldset>}

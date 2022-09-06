@@ -79,7 +79,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         dataset.edges[index].forEach((edge) => {
                             if (edge.fromTime == index) {
                                 try {
-                                    graph.addEdge(edge.start, edge.end)
+                                    graph.addEdge(edge.start, edge.end,{...edge})
                                 } catch (e) {
                                     console.log("error in add edge")
                                 }
@@ -195,7 +195,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         dataset.edges[index].forEach((edge) => {
                             if (edge.fromTime == index && (edge.endTime > selectedDate || edge.endTime == 0)) {
                                 try {
-                                    graph.addEdge(edge.start, edge.end)
+                                    graph.addEdge(edge.start, edge.end,{...edge})
                                 } catch (e) {
                                     console.log("error in add edge")
                                 }

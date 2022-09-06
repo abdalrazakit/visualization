@@ -26,15 +26,17 @@ const GraphEventsController: FC<{
         let isDragging = false;
 
         function makeSelectedNodeNull() {
-            setSelectedNode(null)
+            if (!selectedNode) return
             graph.setNodeAttribute(selectedNode, "highlighted", false);
             selectedNode = null;
+            setSelectedNode(null)
         }
 
         function makeSelectedEdgeNull() {
-            setSelectedEdge(null)
+            if(!selectedEdge) return
             graph.setEdgeAttribute(selectedEdge, "size", 1);
             selectedEdge = null;
+            setSelectedEdge(null)
         }
 
         /**
@@ -57,8 +59,8 @@ const GraphEventsController: FC<{
                     makeSelectedEdgeNull();
                 },
                 doubleClickEdge({edge}) {
+                    console.log(graph.getEdgeAttributes(edge).key)
                     graph.setEdgeAttribute(edge, "size", 2);
-                    selectedEdge = edge;
                     setSelectedEdge(edge)
                     makeSelectedNodeNull();
                 }

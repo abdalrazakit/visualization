@@ -9,8 +9,10 @@ import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import {Cluster, Dataset, FiltersState} from "../types";
 import Panel from "./Panel";
 import {InitForm} from "../helpers/InitForm";
-import {DataBase, Item} from "../helpers/generateData";
+import {DataBase, Item, QueryManger} from "../helpers/generateData";
 import {log} from "util";
+import {Date} from "neo4j-driver";
+import {setDatasets} from "react-chartjs-2/dist/utils";
 
 let sourceNode: string | null = null;
 const clusters= [ "Keeper", "Marketplace", "SearchEngine", "ExecutionManager",
@@ -24,7 +26,7 @@ const CommandsPanel: FC<{
     const graph = sigma.getGraph();
     const database= new DataBase();
 
-    function deleteNode() {
+   async function deleteNode() {
         console.log(dataset )
         if (!selectedNode) return
         var atr = graph.getNodeAttributes(selectedNode);
@@ -32,8 +34,8 @@ const CommandsPanel: FC<{
         const database=new DataBase();
         console.log('the deleted node:'+selectedNode)
         console.log('in the date:'+selectedDate)
-        console.log(new Date(selectedDate))
-         database.deleteNodeById(selectedNode,selectedDate)
+       // console.log(new Date(selectedDate))
+        await database.deleteNodeById(selectedNode,selectedDate)
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
         let att1= graph.getNodeAttributes(selectedNode)
         console.log(att1["cluster"])
@@ -65,20 +67,15 @@ const CommandsPanel: FC<{
         console.log("copy node")
         console.log(atr)
 
-        var item= new Item(atr['cluster'],0,0)
         var database= new DataBase();
-        var component=await database.getNodeComponentById(selectedNode)
 
-        var tempName=item.getNewName();
-        console.log('name='+ tempName)
-        await database.writeQuery(item.getCreatQuery(),{from:selectedDate,end:0,name:tempName,component:component})
-        const idForNewNode= await database.getNodeIdByName(tempName)
+        let res=await database.writeQuery(QueryManger.getCreatQueryByType(atr['cluster']),{from:selectedDate,end:0})
+        let idForNewNode=res.records[0]._fields[0]
+
         console.log('added with id: '+Number(idForNewNode))
 
 
         // var key = storeNodeInNeo4J(node)  //todo
-
-
         var newNode = {
             cluster: atr["cluster"],
             clusterLabel: atr["clusterLabel"],
@@ -98,8 +95,6 @@ const CommandsPanel: FC<{
         graph.addNode( String(idForNewNode), newNode)
         if(idForNewNode)
         dataset.nodes[selectedDate][String(idForNewNode)] = newNode;
-
-
     }
 
     function createEdge() {
@@ -110,8 +105,6 @@ const CommandsPanel: FC<{
     }
 
     useEffect(() => {
-        console.log(selectedNode)
-        console.log(sourceNode)
 
         if (sourceNode && selectedNode) {
             console.log("draw edge from " + sourceNode + "to" + selectedNode)
@@ -125,22 +118,33 @@ const CommandsPanel: FC<{
                 fromTime: selectedDate,
                 endTime: 0,
             };
-            // var key = storeEdgeInNeo4J(newEdge)  //todo
-            var key = "key"
-            newEdge.key = key;
-            graph.addEdge(sourceNode, selectedNode, {size: 1})
-            dataset.edges[selectedDate][newEdge.key] = newEdge;
-            sourceNode = null;
+            var database= new DataBase();
+            const getData=async ()=>{
+                const result= await database.writeQuery(QueryManger.getCreatRelationById(sourceNode,selectedNode,"random"),{from:selectedDate,end:0})
+                let res=result.records[0]._fields[0]
+                console.log('relation id:'+ res)
+                newEdge.key =res;
+                graph.addEdge(sourceNode, selectedNode, {size: 1})
+                dataset.edges[selectedDate][newEdge.key] = newEdge;
+                sourceNode = null;
+            }
+
+            getData()
+
         }
     }, [selectedNode])
 
-    function deleteEdge() {
+   async function deleteEdge() {
         if (!selectedEdge) return
         var atr = graph.getEdgeAttributes(selectedEdge);
-        console.log("delete edge")
-        // deleteEdgeFromNeo4J(atr["key"],selectedDate)  //todo
+        console.log( atr)
+        var database= new DataBase();
+        await database.writeQuery(QueryManger.getDeleteRelationById(atr.key),{end:selectedDate})
+
         graph.dropEdge(selectedEdge)
-        dataset.edges[selectedDate][atr["key"]].endTime = selectedDate;
+       
+       //todo
+      //  dataset.edges[selectedDate][atr["key"]].endTime = selectedDate;
     }
 
     return (
