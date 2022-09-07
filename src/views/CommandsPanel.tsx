@@ -1,12 +1,12 @@
 import React, {FC, useEffect, useMemo, useState} from "react";
 import {useSigma} from "react-sigma-v2";
-import {sortBy, values, keyBy, mapValues, toNumber} from "lodash";
+import {sortBy, values, keyBy, mapValues, toNumber, parseInt, omit} from "lodash";
 import {MdGroupWork} from "react-icons/md";
 import {AiOutlineCheckCircle, AiOutlineCloseCircle} from "react-icons/ai";
 import RangeSlider from 'react-bootstrap-range-slider';
 import 'bootstrap/dist/css/bootstrap.css'; // or include from a CDN
 import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
-import {Cluster, Dataset, FiltersState} from "../types";
+import {Cluster, Dataset, FiltersState, NodeData} from "../types";
 import Panel from "./Panel";
 import {InitForm} from "../helpers/InitForm";
 import {DataBase, Item, QueryManger} from "../helpers/generateData";
@@ -29,7 +29,7 @@ const CommandsPanel: FC<{
    async function deleteNode() {
         console.log(dataset )
         if (!selectedNode) return
-        var atr = graph.getNodeAttributes(selectedNode);
+
         console.log("delete node")
         const database=new DataBase();
         console.log('the deleted node:'+selectedNode)
@@ -38,7 +38,7 @@ const CommandsPanel: FC<{
         await database.deleteNodeById(selectedNode,selectedDate)
         // deleteNodeFromNeo4J(atr["key"],selectedDate)  //todo
         let att1= graph.getNodeAttributes(selectedNode)
-        console.log(att1["cluster"])
+        console.log(att1)
         let selNodeIndex=clusters.findIndex(n=> n==att1["cluster"])!
         console.log('in'+selNodeIndex)
         let nieg=graph.neighbors(selectedNode)
@@ -53,10 +53,22 @@ const CommandsPanel: FC<{
             }
 
         })
+       att1['endTime']=selectedDate
         graph.dropNode(selectedNode)
+       var node = {
+           cluster:att1['cluster'] ,
+           label:att1['label'],
+           x: att1['x']   ,//* x + comId * x,
+           y: att1['y']   ,//* y + comId * y,
+           key: att1['key'] ,
+           fromTime:att1['fromTime'] ,
+           endTime: att1['endTime'],
+           clusterLabel: att1["clusterLabel"],
+           color: att1["color"],
+       };
         //todo
         // console.log(dataset.nodes[selectedNode] )
-        // dataset.nodes[selectedDate][atr["key"]].endTime = selectedDate;
+       dataset.nodes[selectedDate][att1["key"]] = node;
 
     }
 
@@ -124,7 +136,7 @@ const CommandsPanel: FC<{
                 let res=result.records[0]._fields[0]
                 console.log('relation id:'+ res)
                 newEdge.key =res;
-                graph.addEdge(sourceNode, selectedNode, {size: 1})
+                graph.addEdge(sourceNode, selectedNode, {size: 1,key:res})
                 dataset.edges[selectedDate][newEdge.key] = newEdge;
                 sourceNode = null;
             }
@@ -142,9 +154,16 @@ const CommandsPanel: FC<{
         await database.writeQuery(QueryManger.getDeleteRelationById(atr.key),{end:selectedDate})
 
         graph.dropEdge(selectedEdge)
-       
+       var newEdge = {
+           start: atr['start'],
+           end: atr['end'],
+           label: atr['label'],
+           key: atr['key'],
+           fromTime: atr['fromTime'],
+           endTime: selectedDate,
+       };
        //todo
-      //  dataset.edges[selectedDate][atr["key"]].endTime = selectedDate;
+        dataset.edges[selectedDate][atr["key"]] = newEdge;
     }
 
     return (

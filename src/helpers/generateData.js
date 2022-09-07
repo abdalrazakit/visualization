@@ -192,7 +192,7 @@ export class NodeManagement {
     async deleteRandomNodesToDataBase(date,numOfDelete)
     {
         console.log('start deleting')
-        let query='MATCH (n)\n' +
+        let query='MATCH (n) where (n.from <'+date.valueOf()+' and (n.end=0 or n.end >'+date.valueOf()+' ))\n' +
             'WITH apoc.coll.randomItems(COLLECT(n),'+numOfDelete+') AS nodes\n' +
             'UNWIND RANGE(0, SIZE(nodes), 1) AS i\n' +
             'WITH nodes[i] AS n\n' +
@@ -258,6 +258,7 @@ export class NodeManagement {
 
                 }
             }
+            console.log('node '+ nodeId+' type of'+ nType+' the parent: '+pType+' the child '+chType)
         }
     }
 

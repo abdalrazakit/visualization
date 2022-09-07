@@ -46,13 +46,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
             const database= new DataBase();
             var dataset: Dataset = {
                 clusters: [
-                    {
-                        key: "Component",
-                        size: 10,
-                        color: "blue",
-                        clusterLabel: "component",
-                        image: "component"
-                    },
+
                     {key: "Keeper", size: 8, color: "red", clusterLabel: "keeper", image: "keeper"},
                     {
                         key: "Marketplace",
@@ -203,7 +197,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                 dataset.edges[timeLabels[0]].forEach((edge) => {
                                     if (edge.fromTime == timeLabels[0]) {
                                         try{
-                                            graph.addEdge(edge.start, edge.end, {size: 1})
+                                            graph.addEdge(edge.start, edge.end, {size: 1,...edge})
                                         }catch (e) {
                                             console.log("exx")
                                         }

@@ -44,6 +44,7 @@ import FillterController from "../views/FillterController";
 const MyGraph: FC = () => {
 
     const [dataReady, setDataReady] = useState<boolean>(false);
+    const [preDate, setPreDate] = useState(0);
     const [selectedDate, setSelectedDate] = useState(0);
     const [ timeLabels, setTimeLabels] = useState<any[] | null>(null);
     const [dataset, setDataset] = useState<Dataset | null>(null);
@@ -59,8 +60,10 @@ const MyGraph: FC = () => {
             setSelectedDate(new Date(timeLabels[0]).getTime())
         }
     }, [timeLabels])
+
     return (
         <div id="app-root" className={"show-contents"}>
+
             <SigmaContainer
                 graphOptions={{type: "directed", multi: true,allowSelfLoops:true}}
                 initialSettings={{
@@ -124,6 +127,7 @@ const MyGraph: FC = () => {
                         </ControlsContainer>
                         <div className="contents">
                             <div className="panels">
+                                <label>selected date: {new Date(selectedDate).toLocaleDateString("en-us")}</label> {preDate && (<label>previous date: {new Date(preDate).toLocaleDateString("en-us")}</label>)}
                                 <GraphTitle filters={filtersState}/>
                                 <SearchField filters={filtersState}/>
                                 <ClustersPanel
@@ -175,7 +179,7 @@ const MyGraph: FC = () => {
                                     }
                                     }
                                     value={selectedDate}
-                                    onChange={changeEvent => setSelectedDate(toNumber(changeEvent.target.value))}
+                                    onChange={changeEvent =>{setPreDate(selectedDate); setSelectedDate(toNumber(changeEvent.target.value))}}
                                 />
                             </div>)
 
@@ -186,6 +190,7 @@ const MyGraph: FC = () => {
                     </>
                 )}
             </SigmaContainer>
+
         </div>
     );
 
