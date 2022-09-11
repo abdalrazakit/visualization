@@ -104,6 +104,26 @@ const ClustersPanel: FC<{
                                 </li>
                             );
                         })}
+                        <li className="caption-row">
+                            <input
+                                type="checkbox"
+                                checked={ true}
+                                                            />
+                            <label >
+                                <span className="circle"
+                                      style={{background: 'red', borderColor: 'red'}}/>{" "}
+                                <div className="node-label">
+                                    <span>Invalid</span>
+
+                                </div>
+                                <span className="circle"
+                                      style={{background: 'black', borderColor: 'black'}}/>{" "}
+                                <div className="node-label">
+                                    <span>Removed</span>
+
+                                </div>
+                            </label>
+                        </li>
                     </ul>
 
         </Panel>

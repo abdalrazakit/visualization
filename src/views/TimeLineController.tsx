@@ -8,6 +8,7 @@ import neo4j, {DateTime} from "neo4j-driver";
 import {log} from "util";
 import {notDeepEqual} from "assert";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import {Simulate} from "react-dom/test-utils";
 
 var previousDate = 0;
 
@@ -42,7 +43,8 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                 else
                 {
                     graph.setNodeAttribute(node, "color", "#bbb")
-                    graph.setNodeAttribute(node, "size", "5") //todo
+                    console.log(graph.getNodeAttributes(node))
+               //     graph.setNodeAttribute(node, "size", "5") //todo
                 }
             })
              graph.edges().forEach((edge) => {
@@ -67,11 +69,14 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                                             ...omit(MyClusters[node.cluster], "key"),
                                             ...node,
                                             "hidden": !filters[node.cluster],
+
                                         });
+
                                 } catch (e) {
                                     console.log("error in add node: " + e + "node date: " + node.fromTime)
                                 }
                             }
+
                         });
 
                     }
@@ -84,7 +89,8 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         console.log("day:" + selectedDate + " - " + new Date(selectedDate).toLocaleDateString("en-us"))
 
                         dataset.edges[index].forEach((edge) => {
-                            if (edge.fromTime == index) {
+                            //if (edge.fromTime == index)
+                            {
                                 try {
                                     graph.addEdge(edge.start, edge.end,{...edge})
                                 } catch (e) {
@@ -107,7 +113,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                                     console.log(edge)
 
                                     //graph.dropEdge(edge.start, edge.end)
-                                    graph.setEdgeAttribute(edge.key,"size",'5')
+                                 //   graph.setEdgeAttribute(edge.key,"size",'5')
                                     graph.setEdgeAttribute(edge.key ,"color",'black')
 
                                 } catch (e) {
@@ -128,9 +134,9 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                                 try {
                                     //graph.dropNode(node.key);
 
-                                    graph.setNodeAttribute(node.key,'size','15')
+                                //    graph.setNodeAttribute(node.key,'size','15')
                                     graph.setNodeAttribute(node.key,'color','black')
-                                    console.log(graph.getNodeAttributes(node.key)['color'])
+
                                 } catch (e) {
                                     console.log("error in drop node"+e)
                                 }
@@ -139,12 +145,22 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                     }
                 })
                 graph.nodes().forEach((node) => {
-                    if( graph.getNodeAttributes(node)['color']!='black')
-                    {
-                        let neighbors=graph.inNeighbors(node)
-                        if(neighbors.length==0 && graph.getNodeAttributes(node)['cluster']!='Keeper') {
-                            graph.setNodeAttribute(node, 'color', 'blue')
-                            graph.setNodeAttribute(node, 'size', '20')
+                    if( graph.getNodeAttributes(node)['color']!='black') {
+                        if (graph.getNodeAttributes(node)['cluster'] != 'Keeper') {
+                            let neighbors = graph.inNeighbors(node)
+
+                            if (neighbors.length == 0 && graph.getNodeAttributes(node)['cluster'] != 'Keeper') {
+                                graph.setNodeAttribute(node, 'color', 'red')
+                                //    graph.setNodeAttribute(node, 'size', '20')
+                            } else {
+                                let change = true;
+                                neighbors.forEach(n => {
+                                    if (graph.getNodeAttributes(n)['color'] != 'black')
+                                        change = false;
+                                })
+                                if (change)
+                                    graph.setNodeAttribute(node, 'color', 'red')
+                            }
                         }
                     }
                 })
@@ -153,6 +169,49 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
             if (previousDate > selectedDate) {
                 console.log("Go back")
                 var reversTimeLabel = timeLabels.slice().reverse()
+
+                reversTimeLabel.forEach(function (val) {
+                    var index = val;
+                    if (index <= previousDate) {
+                        if (index < selectedDate) // end;
+                            return;
+                        dataset.nodes[index].forEach((node) => {
+                            if (node.endTime == index && node.fromTime <= selectedDate) {
+                                try {
+                                    console.log("add" +node)
+
+                                    graph.addNode(node.key,
+                                        {
+                                            ...omit(MyClusters[node.cluster], "key"),
+                                            ...node,
+
+                                            "hidden": !filters[node.cluster],
+                                        });
+                                    if(node.endTime==selectedDate)
+                                        graph.setNodeAttribute(node.key,'color','black')
+                                } catch (e) {
+                                    console.log("error in add node"+ e)
+                                }
+                            }
+                        });
+                    }
+                });
+
+               graph.clearEdges()
+                reversTimeLabel.forEach(function (val) {
+                    var index = val;
+                    if (index <= selectedDate) {
+                        dataset.edges[index].forEach((edge) => {
+                            if (edge.fromTime == index && (edge.endTime >= selectedDate || edge.endTime == 0)) {
+                                try {
+                                    graph.addEdge(edge.start, edge.end,{...edge})
+                                } catch (e) {
+                                    console.log("error in add edge")
+                                }
+                            }
+                        });
+                    }
+                });
                     reversTimeLabel.forEach(function (val) {
                         var index = val;
                         if (index <= previousDate) {
@@ -163,7 +222,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                                 if (edge.fromTime == selectedDate) {
                                     try {
                                        // graph.dropEdge(edge.start, edge.end)
-                                        graph.setEdgeAttribute(edge.key,"size",'5')
+                                //        graph.setEdgeAttribute(edge.key,"size",'5')
                                         graph.setEdgeAttribute(edge.key ,"color",'black')
                                     } catch (e) {
                                     }
@@ -180,7 +239,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                         dataset.nodes[index].forEach((node) => {
                             if (node.fromTime == index) {
                                 try {
-                                    graph.setNodeAttribute(node.key,'size','15')
+                               //     graph.setNodeAttribute(node.key,'size','15')
                                     graph.setNodeAttribute(node.key,'color','black')
                                     //graph.dropNode(node.key);
                                 } catch (e) {
@@ -191,55 +250,23 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
                     }
                 });
 
-                reversTimeLabel.forEach(function (val) {
-                    var index = val;
-                    if (index <= previousDate) {
-                        if (index <= selectedDate) // end;
-                            return;
-                         dataset.nodes[index].forEach((node) => {
-                            if (node.endTime == index && node.fromTime <= selectedDate) {
-                                try {
-                                    console.log("add" +node)
-
-                                    graph.addNode(node.key,
-                                        {
-                                            ...omit(MyClusters[node.cluster], "key"),
-                                            ...node,
-
-                                            "hidden": !filters[node.cluster],
-                                        });
-                                } catch (e) {
-                                    console.log("error in add node")
-                                }
-                            }
-                        });
-                    }
-                });
-
-                graph.clearEdges()
-                reversTimeLabel.forEach(function (val) {
-                    var index = val;
-                    if (index <= selectedDate) {
-                        dataset.edges[index].forEach((edge) => {
-                            if (edge.fromTime == index && (edge.endTime > selectedDate || edge.endTime == 0)) {
-                                try {
-                                    graph.addEdge(edge.start, edge.end,{...edge})
-                                } catch (e) {
-                                    console.log("error in add edge")
-                                }
-                            }
-                        });
-                    }
-                });
                 graph.nodes().forEach((node) => {
-                    if( graph.getNodeAttributes(node)['color']!='black')
-                    {
-                        let neighbors=graph.inNeighbors(node)
-                        if(neighbors.length==0 && graph.getNodeAttributes(node)['cluster']!='Keeper') {
-                            graph.setNodeAttribute(node, 'color', 'blue')
-                            graph.setNodeAttribute(node,'size','20')
+                    if( graph.getNodeAttributes(node)['color']!='black') {
+                        let neighbors = graph.inNeighbors(node)
+                        if (graph.getNodeAttributes(node)['cluster'] != 'Keeper') {
+                            if (neighbors.length == 0 ) {
+                                graph.setNodeAttribute(node, 'color', 'red')
+                                //  graph.setNodeAttribute(node,'size','20')
+                            } else {
+                                let change = true;
+                                neighbors.forEach(n => {
+                                    if (graph.getNodeAttributes(n)['color'] != 'black')
+                                        change = false;
+                                })
+                                if (change)
+                                    graph.setNodeAttribute(node, 'color', 'red')
+                            }
                         }
-
                     }
                 })
             }
@@ -252,7 +279,7 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
         }, [selectedDate]);
 
 
-        return <div><label>pre date: {previousDate}</label></div>//<>{children}</>;
+        return <>{children}</>;
     }
 ;
 

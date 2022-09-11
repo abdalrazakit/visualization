@@ -41,20 +41,29 @@ const CommandsPanel: FC<{
         console.log(att1)
         let selNodeIndex=clusters.findIndex(n=> n==att1["cluster"])!
         console.log('in'+selNodeIndex)
-        let nieg=graph.neighbors(selectedNode)
-        nieg.forEach(node=> {
-            let cl=graph.getNodeAttributes(node)["cluster"]
-            console.log('cl'+cl)
-            let index=clusters.findIndex(n=> n==cl)!
-            console.log(index)
-            if(index>selNodeIndex)
-            {
-                graph.setNodeAttribute(node, "color","black")
-            }
+        let nieg=graph.outNeighbors(selectedNode)
+       console.log(nieg)
+       graph.dropNode(selectedNode)
+       nieg.forEach(node=> {
+           if(graph.getNodeAttributes(node)['color'] != 'black') {
+               let change = true;
+               graph.inNeighbors(node).forEach(n => {
+                   console.log('/t')
+                   console.log(n)
+                   console.log(graph.getNodeAttributes(n)['color'])
+                   if (graph.getNodeAttributes(n)['color'] != 'black')
+                       change = false;
+               })
+               if (change)
+                   graph.setNodeAttribute(node, 'color', 'red')
 
-        })
+           }
+       })
+
+
+
        att1['endTime']=selectedDate
-        graph.dropNode(selectedNode)
+
        var node = {
            cluster:att1['cluster'] ,
            label:att1['label'],
@@ -65,6 +74,7 @@ const CommandsPanel: FC<{
            endTime: att1['endTime'],
            clusterLabel: att1["clusterLabel"],
            color: att1["color"],
+
        };
         //todo
         // console.log(dataset.nodes[selectedNode] )

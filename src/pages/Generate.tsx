@@ -132,8 +132,8 @@ function Generate() {
             let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
 
             let exeManager = new Item("ExecutionManager", Math.round(formData.NumOfExecutionManager / formData.NumOfMarketplace));
-            let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor / formData.NumOfExecutionManager));
-            let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfNodeExecutor));
+            let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor / formData.NumOfMarketplace));
+            let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfMarketplace));
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
 
@@ -318,7 +318,7 @@ function Generate() {
                         <div>
                         <input type="number" name="NumOfNodeExecutor" onChange={handleChange} step="1"
                                value={formData.NumOfNodeExecutor || ''}/>
-                            <label>For each ExecutionManagers ({(formData.NumOfNodeExecutor/formData.NumOfExecutionManager )}) NodeExecutors</label>
+                            <label>For each Marketplace ({(formData.NumOfNodeExecutor/formData.NumOfMarketplace )}) NodeExecutors</label>
                         </div>
                     </div>
 
@@ -327,7 +327,7 @@ function Generate() {
                         <div>
                         <input type="number" name="NumOfAssetManager" onChange={handleChange} step="1"
                                value={formData.NumOfAssetManager || ''}/>
-                            <label>For each NodeExecutors ({(formData.NumOfAssetManager/formData.NumOfNodeExecutor )}) AssetManagers</label>
+                            <label>For each Marketplace ({(formData.NumOfAssetManager/formData.NumOfMarketplace )}) AssetManagers</label>
                         </div>
                     </div>
 

@@ -33,26 +33,26 @@ const GraphSettingsController: FC<{ hoveredNode: string | null }> = ({ children,
   useEffect(() => {
     const hoveredColor: string = debouncedHoveredNode ? sigma.getNodeDisplayData(debouncedHoveredNode)!.color : "";
 
-    sigma.setSetting(
-      "nodeReducer",
-      debouncedHoveredNode
-        ? (node, data) =>
-            node === debouncedHoveredNode ||
-            graph.hasEdge(node, debouncedHoveredNode) ||
-            graph.hasEdge(debouncedHoveredNode, node)
-              ? { ...data, zIndex: 1 }
-              : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, image: null, highlighted: false }
-        : null,
-    );
-    sigma.setSetting(
-      "edgeReducer",
-      debouncedHoveredNode
-        ? (edge, data) =>
-            graph.hasExtremity(edge, debouncedHoveredNode)
-              ? { ...data, color: hoveredColor, size: 2 }
-              : { ...data, color: EDGE_FADE_COLOR, hidden: true }
-        : null,
-    );
+    // sigma.setSetting(
+    //   "nodeReducer",
+    //   debouncedHoveredNode
+    //     ? (node, data) =>
+    //         node === debouncedHoveredNode ||
+    //         graph.hasEdge(node, debouncedHoveredNode) ||
+    //         graph.hasEdge(debouncedHoveredNode, node)
+    //           ? { ...data, zIndex: 1 }
+    //           : { ...data, zIndex: 0, label: "", color: NODE_FADE_COLOR, image: null, highlighted: false }
+    //     : null,
+    // );
+    // sigma.setSetting(
+    //   "edgeReducer",
+    //   debouncedHoveredNode
+    //     ? (edge, data) =>
+    //         graph.hasExtremity(edge, debouncedHoveredNode)
+    //           ? { ...data, color: hoveredColor, size: 2 }
+    //           : { ...data, color: EDGE_FADE_COLOR, hidden: true }
+    //     : null,
+    // );
   }, [debouncedHoveredNode]);
 
   return <>{children}</>;

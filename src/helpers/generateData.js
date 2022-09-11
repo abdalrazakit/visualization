@@ -3,29 +3,29 @@ import {driver} from "neo4j-driver";
 import {result} from "lodash";
 
 const deb=true;
-const pName= {
+const pName= { //the parent type for each node
     'Keeper': null,
     'Marketplace': 'Keeper',
-    'AssetManager':'NodeExecutor',
+    'AssetManager':'Marketplace',
     'ExecutionManager':'Marketplace',
     'SearchEngine':'Keeper',
-    'NodeExecutor':'ExecutionManager'
+    'NodeExecutor':'Marketplace'
 }
-const chName= {
+const chName= { //the child possible types for each node
     'Keeper': ['Marketplace','SearchEngine'],
-    'Marketplace': ['ExecutionManager'],
+    'Marketplace': ['ExecutionManager','NodeExecutor','AssetManager'],
     'AssetManager':[null],
-    'ExecutionManager':['NodeExecutor'],
+    'ExecutionManager':[null],
     'SearchEngine':[null],
-    'NodeExecutor':['AssetManager']
+    'NodeExecutor':[null]
 }
 const relationName=
     {
         'Keeper->Marketplace': 'has',
         'Keeper->SearchEngine':'has',
         'Marketplace->ExecutionManager':'manageBy',
-        'ExecutionManager->NodeExecutor':'manages',
-        'NodeExecutor-AssetManager>':'has'
+        'Marketplace->NodeExecutor':'manages',
+        'Marketplace-AssetManager>':'has'
     }
  export class QueryManger{
     static getCreatRelationById(source, target, relationName) {
@@ -60,12 +60,14 @@ export class Item {
     }
     //returns a query to add an item to the Database
     getCreatQuery() {
-        return 'CREATE (k:' + this.name.toString() +
-            ' {name: $name, from: $from, end:$end })'
+        return   'CREATE (k:' + this.name.toString() +
+                 ' {name: $name, from: $from, end:$end })'
     }
     //create a relation between two items
     getCreatRelationWith(myName, withType, withName, relationName) {
-        return ' match (obj1:' + this.name.toString() + ' {name:"' + myName + '"})' + 'match (obj2:' + withType + ' {name:"' + withName + '"})' + 'MERGE (obj1)-[:' + relationName + ' {from: $from, end:$end } ]->(obj2)'
+        return ' match (obj1:' + this.name.toString() + ' {name:"' + myName + '"})' //find the first node
+                + ' match (obj2:' + withType + ' {name:"' + withName + '"})' //find the second node
+                + ' MERGE (obj1)-[:' + relationName + ' {from: $from, end:$end } ]->(obj2)' //creat the relation
     }
     static getCreatRelationWith(typeName, myName, withType, withName, relationName) {
         return ' match (obj1:' + typeName + ' {name:"' + myName + '"})' + 'match (obj2:' + withType + ' {name:"' + withName + '"})' + 'MERGE (obj1)-[:' + relationName + ' {from: $from, end:$end } ]->(obj2)'
@@ -179,31 +181,38 @@ export class NodeManagement {
     constructor(database) {
         this.database = database;
     }
-
+    //get nodes by ID and the type of node, which NOT deleted
     async getAllNodesIdByTypeDate(type,date)
     {
         let query='Match (n:'+type+') where (n.end>'+date.valueOf()+' or n.end=0 ) return Id(n)'
         return this.database.readQuery(query)
     }
+    //get the supposed relation type between two nodes
     getRelationType(t1,t2)
     {
         return relationName[t1+'->'+t2];
     }
+    //delete random nodes on a specific date and limited num
     async deleteRandomNodesToDataBase(date,numOfDelete)
     {
         console.log('start deleting')
-        let query='MATCH (n) where (n.from <'+date.valueOf()+' and (n.end=0 or n.end >'+date.valueOf()+' ))\n' +
+        let query='MATCH (n) where'+ //choose a node that has been added already, and hasn't been deleted yet:
+            ' (n.from <'+date.valueOf()+' and (n.end=0 or n.end >'+date.valueOf()+' ))\n' +
+            //choose number of random nodes that match the previews condition
             'WITH apoc.coll.randomItems(COLLECT(n),'+numOfDelete+') AS nodes\n' +
+            //for each node:
             'UNWIND RANGE(0, SIZE(nodes), 1) AS i\n' +
             'WITH nodes[i] AS n\n' +
+            //find the relation for this node:
             'match (n1)-[r]->(n2) where id(n)=id(n1) or id(n)=id(n2)\n' +
+            //set the end time for the node and its relation (delete it)
             'set n.end='+date.valueOf()+', r.end='+date.valueOf()+'\n' +
             'return COLLECT(n)'
         let result= await this.database.writeQuery(query)
         console.log('done deleting')
         console.log(result)
     }
-    //with relation
+    //add random nodes to the database with relationships on a specific date
     async addRandomNodesToDataBase(date,numOfAdd)
     {
         for (let i=0; i<numOfAdd;i++)
@@ -224,7 +233,8 @@ export class NodeManagement {
             }
 
             //add the new node
-            let res= await this.database.writeQuery(QueryManger.getCreatQueryByType(nType),{from:date.valueOf(),end:0})
+            let res= await this.database.writeQuery(QueryManger.getCreatQueryByType(nType),
+                {from:date.valueOf(),end:0})
             let nodeId=res.records[0]._fields[0]
 
             //adding Parent relation
@@ -232,27 +242,27 @@ export class NodeManagement {
                 //choose random parent
                 let pList= await this.getAllNodesIdByTypeDate(pType,date)
                 console.log(pList.records)
-                if(pList.records.length>0) {
-                    let i=Math.floor(pList.records.length* Math.random())
-                    let pNodeId = pList.records[i]._fields[0]
+                if(pList.records.length>0)// there is available parent node
+                {
+                    let i=Math.floor(pList.records.length* Math.random()) //chose random parent
+                    let pNodeId = pList.records[i]._fields[0] //take the id of the parent
 
-                    //adding the relation
+                    //adding the relation between the new node and the parent
                     await this.database.writeQuery(QueryManger.getCreatRelationById(pNodeId,nodeId,
                         this.getRelationType(pType,nType)),{from:date.valueOf(),end:0})
-
                 }
             }
             //adding Child relation
             console.log(chType)
             if(chType!=null) {
-                //choose random parent
+                //choose random child
                 let pList= await this.getAllNodesIdByTypeDate(chType,date)
 
-                if(pList.records.length>0) {
-                    let i=Math.floor(pList.records.length* Math.random())
+                if(pList.records.length>0) {// there is available child nodes
+                    let i=Math.floor(pList.records.length* Math.random())//chose random child
                     let pNodeId = pList.records[i]._fields[0]
 
-                    //adding the relation
+                    //adding the relation between the new node and the child
                     await this.database.writeQuery(QueryManger.getCreatRelationById(nodeId,pNodeId,
                         this.getRelationType(nType,chType)),{from:date.valueOf(),end:0})
 
@@ -261,10 +271,10 @@ export class NodeManagement {
             console.log('node '+ nodeId+' type of'+ nType+' the parent: '+pType+' the child '+chType)
         }
     }
-
+    //add specific nodes (with determined type) to the database with relationships on a specific date
     async addCompleteDayToDataBase(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         if(deb) console.log('addCompleteDayToDataBase')
-        for (let k = 0; k < keeper.count; k++)// keepers  for each component
+        for (let k = 0; k < keeper.count; k++)// num of keepers
         {
             let keeperName = keeper.getNewName();
             await this.database.writeQuery(keeper.getCreatQuery(), {
@@ -272,7 +282,6 @@ export class NodeManagement {
                 from: date.valueOf(),
                 end: 0,
             })
-
             for (let m = 0; m < marketPlace.count; m++)// market
             {
                 let marketName = marketPlace.getNewName();
@@ -281,9 +290,10 @@ export class NodeManagement {
                     from: date.valueOf(),
                     end: 0,
                 })
-                await this.database.writeQuery(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"), {
-                    from: date.valueOf(), end: 0
-                })
+                //make a relation between the keeper and marketplace
+                console.log(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"))
+                await this.database.writeQuery(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"),
+                    { from: date.valueOf(), end: 0})
                 //generate execution manager
                 for (let e = 0; e < exeManager.count; e++) {
                     let exeManagerName = exeManager.getNewName();
@@ -293,28 +303,30 @@ export class NodeManagement {
                     await this.database.writeQuery(marketPlace.getCreatRelationWith(marketName, exeManager.name, exeManagerName, "manageBy"), {
                         from: date.valueOf(), end: 0
                     })
+                }
                     ////// creat nodeExecutor
                     for (let e = 0; e < nodeExecutor.count; e++) {
                         let nodeExecutorName = nodeExecutor.getNewName();
                         await this.database.writeQuery(nodeExecutor.getCreatQuery(), {
                             name: nodeExecutorName, from: date.valueOf(), end: 0
                         })
-                        await this.database.writeQuery(exeManager.getCreatRelationWith(exeManagerName, nodeExecutor.name, nodeExecutorName, "manages"), {
+                        await this.database.writeQuery(marketPlace.getCreatRelationWith(marketName, nodeExecutor.name, nodeExecutorName, "manages"), {
                             from: date.valueOf(), end: 0
                         })
+                    }
                         ////// creat assetManager
                         for (let e = 0; e < assetManager.count; e++) {
                             let assetManagerName = assetManager.getNewName();
                             await this.database.writeQuery(assetManager.getCreatQuery(), {
                                 name: assetManagerName, from: date.valueOf(), end: 0
                             })
-                            await this.database.writeQuery(nodeExecutor.getCreatRelationWith(nodeExecutorName, assetManager.name, assetManagerName, "has"), {
+                            await this.database.writeQuery(marketPlace.getCreatRelationWith(marketName, assetManager.name, assetManagerName, "has"), {
                                 from: date.valueOf(), end: 0
                             })
 
                         }
-                    }
-                }
+
+
             }
 
             for (let s = 0; s < searchEngine.count; s++)
@@ -330,7 +342,8 @@ export class NodeManagement {
         }
 
     }
-     addCompleteDayToList(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
+    //add specific nodes (with determined type) to a list with relationships on a specific date
+    addCompleteDayToList(date, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine) {
         var nodeList = [];
         var relationList = [];
         for (let k = 0; k < keeper.count; k++)// keepers  for each component
@@ -382,7 +395,7 @@ export class NodeManagement {
                             from: date.valueOf(), end: 0
                         }
                     )
-
+                }
                     ////// creat nodeExecutor
                     for (let e = 0; e < nodeExecutor.count; e++) {
                         let nodeExecutorName = nodeExecutor.getNewName();
@@ -396,12 +409,13 @@ export class NodeManagement {
                         )
                         relationList.push(
                             {
-                                source: exeManagerName,
+                                source: marketName,
                                 relation: "manages",
                                 target: nodeExecutorName,
                                 from: date.valueOf(), end: 0
                             }
                         )
+                    }
                         ////// creat assetManager
                         for (let e = 0; e < assetManager.count; e++) {
                             let assetManagerName = assetManager.getNewName();
@@ -415,15 +429,15 @@ export class NodeManagement {
                             )
                             relationList.push(
                                 {
-                                    source: nodeExecutorName,
+                                    source: marketName,
                                     relation: "has",
                                     target: assetManagerName,
                                     from: date.valueOf(), end: 0
                                 }
                             )
                         }
-                    }
-                }
+
+
             }
             for (let s = 0; s < searchEngine.count; s++)
             {
@@ -449,10 +463,7 @@ export class NodeManagement {
     return [nodeList, relationList]
 
     }
-
-
-
-}
+    }
 
 export async function clearDataBase() {
     let database = new DataBase();

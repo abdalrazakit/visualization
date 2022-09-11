@@ -47,7 +47,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
             var dataset: Dataset = {
                 clusters: [
 
-                    {key: "Keeper", size: 8, color: "red", clusterLabel: "keeper", image: "keeper"},
+                    {key: "Keeper", size: 8, color: "purple", clusterLabel: "keeper", image: "keeper"},
                     {
                         key: "Marketplace",
                         size: 6,
@@ -78,7 +78,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                         color: "brown",
                         clusterLabel: "asset manager",
                         image: "assetmanager", size: 4,
-                    }],
+                    },
+                    ],
                 edges: [],
                 nodes: []
             };
@@ -131,7 +132,8 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                 y: Math.random()  ,//* y + comId * y,
                                                 key: value.identity,
                                                 fromTime:parseInt( value.properties.from),
-                                                endTime: parseInt(value.properties.end)
+                                                endTime: parseInt(value.properties.end),
+
                                             };
                                             if (node.fromTime != node.endTime) {
                                                 if (!dataset.nodes[node.fromTime][node.key]) {

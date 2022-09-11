@@ -40,6 +40,8 @@ import CommandsPanel from "../views/CommandsPanel";
 import FillterController from "../views/FillterController";
 
 
+
+
 // Create the sigma
 const MyGraph: FC = () => {
 
@@ -65,9 +67,13 @@ const MyGraph: FC = () => {
         <div id="app-root" className={"show-contents"}>
 
             <SigmaContainer
-                graphOptions={{type: "directed", multi: true,allowSelfLoops:true}}
+                graphOptions={ {type: "directed", multi: true,allowSelfLoops:true}}
+
                 initialSettings={{
-                    nodeProgramClasses: {image: getNodeProgramImage()},
+                        nodeProgramClasses: {
+                            image: getNodeProgramImage(),
+
+                        },
                     labelRenderer: drawLabel,
                     defaultNodeType: "image",
                     defaultEdgeType: "arrow",
@@ -76,6 +82,7 @@ const MyGraph: FC = () => {
                     labelRenderedSizeThreshold: 15,
                     labelFont: "Lato, sans-serif",
                     zIndex: true,
+
                 }}
                 className="react-sigma"
             >
@@ -104,7 +111,7 @@ const MyGraph: FC = () => {
                         <GraphEventsController selectedDate={selectedDate} setHoveredNode={setHoveredNode}
                                                setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge}
                                                dataset={dataset!}/>
-
+                        <GraphSettingsController hoveredNode={selectedNode}></GraphSettingsController>
                         <ControlsContainer position={"bottom-left"}>
                             <ZoomControl/>
                             <FullScreenControl/>
@@ -160,6 +167,7 @@ const MyGraph: FC = () => {
                                         }));
                                     }}
                                 />
+
                                 <CommandsPanel dataset={dataset!} selectedDate={selectedDate}
                                                selectedEdge={selectedEdge} selectedNode={selectedNode}/>
 

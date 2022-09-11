@@ -6,6 +6,7 @@ export interface NodeData {
   y: number;
   fromTime:number
   endTime:number
+
 }
 
 export interface EdgeData {
