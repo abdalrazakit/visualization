@@ -195,7 +195,7 @@ export class NodeManagement {
     //delete random nodes on a specific date and limited num
     async deleteRandomNodesToDataBase(date,numOfDelete)
     {
-        console.log('start deleting')
+        if(deb) console.log('start deleting')
         let query='MATCH (n) where'+ //choose a node that has been added already, and hasn't been deleted yet:
             ' (n.from <'+date.valueOf()+' and (n.end=0 or n.end >'+date.valueOf()+' ))\n' +
             //choose number of random nodes that match the previews condition
@@ -209,8 +209,8 @@ export class NodeManagement {
             'set n.end='+date.valueOf()+', r.end='+date.valueOf()+'\n' +
             'return COLLECT(n)'
         let result= await this.database.writeQuery(query)
-        console.log('done deleting')
-        console.log(result)
+        if(deb) console.log('done deleting')
+        if(deb) console.log(result)
     }
     //add random nodes to the database with relationships on a specific date
     async addRandomNodesToDataBase(date,numOfAdd)
@@ -241,7 +241,7 @@ export class NodeManagement {
             if(pType!=null) {
                 //choose random parent
                 let pList= await this.getAllNodesIdByTypeDate(pType,date)
-                console.log(pList.records)
+                if(deb) console.log(pList.records)
                 if(pList.records.length>0)// there is available parent node
                 {
                     let i=Math.floor(pList.records.length* Math.random()) //chose random parent
@@ -268,7 +268,7 @@ export class NodeManagement {
 
                 }
             }
-            console.log('node '+ nodeId+' type of'+ nType+' the parent: '+pType+' the child '+chType)
+            if(deb)  console.log('node '+ nodeId+' type of'+ nType+' the parent: '+pType+' the child '+chType)
         }
     }
     //add specific nodes (with determined type) to the database with relationships on a specific date
@@ -291,7 +291,7 @@ export class NodeManagement {
                     end: 0,
                 })
                 //make a relation between the keeper and marketplace
-                console.log(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"))
+                if(deb) console.log(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"))
                 await this.database.writeQuery(keeper.getCreatRelationWith(keeperName, marketPlace.name, marketName, "has"),
                     { from: date.valueOf(), end: 0})
                 //generate execution manager
@@ -502,20 +502,20 @@ export async function generateFromFile(Nodefile1,Relfile1) {
     var Nodefile= 'file:///'+ Nodefile1//'https://docs.google.com/spreadsheets/d/'+Nodefile1+'/export?format=csv'
     var Relfile='file:///'+Relfile1 // 'https://docs.google.com/spreadsheets/d/'+Relfile1+'/export?format=csv'
 
-    console.log('node:'+Nodefile)
-    console.log('rel:'+Relfile)
+    if(deb) console.log('node:'+Nodefile)
+    if(deb) console.log('rel:'+Relfile)
     var query = "load csv with headers from " +
         "'" + Nodefile + "' as row\n" +
         'call apoc.create.node([row.Label],' +
         '{ name:row.name, from:toInteger(row.from),end:toInteger(row.end), component:row.component}) \n' +
         'yield node return count(node)';
     let dataBase = new DataBase();
-    console.log(query)
-    console.log('adding nodes...')
+    if(deb) console.log(query)
+    if(deb) console.log('adding nodes...')
     await dataBase.writeQuery(query);
 
-    console.log('done adding nodes')
-    console.log('rel:'+Relfile)
+    if(deb) console.log('done adding nodes')
+    if(deb) console.log('rel:'+Relfile)
     // query="load csv with headers from "
     //     +"'"+ Relfile + "' as row " +
     //     'match (p {name: row.source}) '+
@@ -534,11 +534,11 @@ export async function generateFromFile(Nodefile1,Relfile1) {
             "        ,{batchSize:1});"
 
 
-    console.log('query '+ query)
-    console.log('adding relations...')
+    if(deb) console.log('query '+ query)
+    if(deb) console.log('adding relations...')
     await dataBase.writeQuery(query);
 
-    console.log('done adding relations')
+    if(deb) if(deb) console.log('done adding relations')
  }
 
 Date.prototype.addDays = function(days) {
@@ -556,7 +556,7 @@ export async function startGenerateToDataBase(numOfDays, keeper, marketPlace, ex
 
     await nodeManagement.addCompleteDayToDataBase(date,
         keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
-    console.log('added first day')
+    if(deb) console.log('added first day')
 
     for (let i = numOfDays;  i > 0;i--) {
         date=date.addDays(1)

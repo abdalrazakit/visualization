@@ -19,6 +19,8 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
 
         useEffect(() => {
 
+            var startTime = performance.now()
+
             if (!dataset)
                 return;
 
@@ -275,7 +277,9 @@ const TimeLineController: FC<{ timeLabels: any[], dataset: Dataset, filters: Fil
             previousDate = selectedDate;
             setFiltersState((filters) => ({...filters}));
             // setShowContents(true);
-
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The transition took '+ time+' milliseconds')
         }, [selectedDate]);
 
 

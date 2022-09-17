@@ -46,15 +46,19 @@ function Generate() {
         setGeneratingState(1);
         if (formData.type == 'Random') {
 
-            let keeper = new Item("Keeper", 1, 5);
-            let marketPlace = new Item("Marketplace", 1, 5);
-            let exeManager = new Item("ExecutionManager", 1, 5);
-            let nodeExecutor = new Item('NodeExecutor', 1, 5);
-            let assetManager = new Item('AssetManager', 1, 5);
-            let searchEngine = new Item("SearchEngine", 1, 5);
-            let numOfDays = Math.round(Math.random() * 10);
-            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine,Math.round(Math.random() * 10),Math.round(Math.random() * 10) )
+            let keeper = new Item("Keeper", 1, 20);
+            let marketPlace = new Item("Marketplace", 1, 20);
+            let exeManager = new Item("ExecutionManager", 1, 20);
+            let nodeExecutor = new Item('NodeExecutor', 1, 20);
+            let assetManager = new Item('AssetManager', 1, 20);
+            let searchEngine = new Item("SearchEngine", 1, 20);
+            let numOfDays = Math.round(Math.random() * 40);
+            var startTime = performance.now()
+            await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine,Math.round(Math.random() * 40),Math.round(Math.random() * 40) )
 
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The generating took '+ time+' milliseconds')
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
 
@@ -65,8 +69,11 @@ function Generate() {
             let assetManager = new Item('AssetManager', formData.AssetManager_min, formData.AssetManager_max);
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
+            var startTime = performance.now()
             await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete)//, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
-
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The generating took '+ time+' milliseconds')
 
         } else if (formData.type == 'Logicly') {
 
@@ -80,8 +87,12 @@ function Generate() {
             let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfNodeExecutor));
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
-
+            var startTime = performance.now()
             await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd,formData.NumOfDelete,)//,  formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
+
+            var endTime = performance.now()
+            var time=endTime - startTime
+           alert('The generating took '+ time+' milliseconds')
         } else if (formData.type == 'fromFile') {
 
         }
@@ -96,17 +107,21 @@ function Generate() {
         setGeneratingState(1);
         if (formData.type == 'Random') {
 
-            let keeper = new Item("Keeper", 1, 5);
-            let marketPlace = new Item("Marketplace", 1, 5);
-            let exeManager = new Item("ExecutionManager", 1, 5);
-            let nodeExecutor = new Item('NodeExecutor', 1, 5);
-            let assetManager = new Item('AssetManager', 1, 5);
-            let searchEngine = new Item("SearchEngine", 1, 5);
-            let numOfDays = Math.round(Math.random() * 10);
+            let keeper = new Item("Keeper", 1, 20);
+            let marketPlace = new Item("Marketplace", 1, 20);
+            let exeManager = new Item("ExecutionManager", 1, 20);
+            let nodeExecutor = new Item('NodeExecutor', 1, 20);
+            let assetManager = new Item('AssetManager', 1, 20);
+            let searchEngine = new Item("SearchEngine", 1, 20);
+            let numOfDays = Math.round(Math.random() * 40);
             console.log('num of days on random generate:'+ numOfDays
             )
+            var startTime = performance.now()
              var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine)
 
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The generating took '+ time+' milliseconds')
              nodesList = lists[0];
             relationsList=lists[1];
 
@@ -119,9 +134,12 @@ function Generate() {
             let assetManager = new Item('AssetManager', formData.AssetManager_min, formData.AssetManager_max);
             let searchEngine = new Item("SearchEngine", formData.SearchEngine_min, formData.SearchEngine_max);
             let numOfDays = formData.DaysNumber
-
+            var startTime = performance.now()
              var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd)//, formData.NumOfDelete, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
 
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The generating took '+ time+' milliseconds')
              nodesList = lists[0];
             relationsList=lists[1];
         } else if (formData.type == 'Logicly') {
@@ -136,8 +154,12 @@ function Generate() {
             let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfMarketplace));
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
-
+            var startTime = performance.now()
             var lists = await startGenerateToFile(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd)//, formData.NumOfDelete, formData.NumOfEdit)
+
+            var endTime = performance.now()
+            var time=endTime - startTime
+            alert('The generating took '+ time+' milliseconds')
             console.log(lists)
             nodesList = lists[0];
             relationsList=lists[1];
@@ -225,7 +247,7 @@ function Generate() {
                     </div>
 
                     <div className="input-container">
-                        <label>For each ExecutionManager, the range of added NodeExecutors: </label>
+                        <label>For each Marketplace, the range of added NodeExecutors: </label>
                     </div>
 
                     <div className="input-container">
@@ -238,7 +260,7 @@ function Generate() {
                     </div>
 
                     <div className="input-container">
-                        <label>For each NodeExecutor, the range of added AssetManagers: </label>
+                        <label>For each Marketplace, the range of added AssetManagers: </label>
                     </div>
 
                     <div className="input-container">

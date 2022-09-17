@@ -106,7 +106,8 @@ const MyGraph: FC = () => {
                                               selectedDate={selectedDate}
                                                            filters={filtersState}
                                                            setFiltersState={setFiltersState}/>
-                        )}
+                        )
+                        }
                         {/*<GraphSettingsController hoveredNode={hoveredNode}/>*/}
                         <GraphEventsController selectedDate={selectedDate} setHoveredNode={setHoveredNode}
                                                setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge}
