@@ -112,7 +112,7 @@ const MyGraph: FC = () => {
                         <GraphEventsController selectedDate={selectedDate} setHoveredNode={setHoveredNode}
                                                setSelectedNode={setSelectedNode} setSelectedEdge={setSelectedEdge}
                                                dataset={dataset!}/>
-                        <GraphSettingsController hoveredNode={selectedNode}></GraphSettingsController>
+                        {/*<GraphSettingsController hoveredNode={selectedNode}></GraphSettingsController>*/}
                         <ControlsContainer position={"bottom-left"}>
                             <ZoomControl/>
                             <FullScreenControl/>
@@ -138,36 +138,24 @@ const MyGraph: FC = () => {
                                 <label>selected date: {new Date(selectedDate).toLocaleDateString("en-us")}</label> {preDate && (<label>previous date: {new Date(preDate).toLocaleDateString("en-us")}</label>)}
                                 <GraphTitle filters={filtersState}/>
                                 <SearchField filters={filtersState}/>
-                                <ClustersPanel
-                                    clusters={dataset!.clusters}
-                                    filters={filtersState}
-                                    setClusters={(clusters) =>
-                                        setFiltersState((filters) => ({
-                                            ...filters,
-                                            clusters,
-                                        }))
-                                    }
-                                    startTimeLine={() => {
-                                        debugger
-                                        if (timeLabels) {
-                                            var index = timeLabels.findIndex((e) => {
-                                                return e[0] == selectedDate
-                                            })
-                                            if (index != -1 && index + 1 < timeLabels.length)
-                                                setSelectedDate(new Date(timeLabels[index + 1]).getTime())
-                                        }
-                                    }}
-                                    stopTimeLine={() => {
-                                    }}
-                                    toggleCluster={(cluster) => {
-                                        setFiltersState((filters) => ({
-                                            ...filters,
-                                            clusters: filters.clusters[cluster]
-                                                ? omit(filters.clusters, cluster)
-                                                : {...filters.clusters, [cluster]: true},
-                                        }));
-                                    }}
-                                />
+                                {/*<ClustersPanel*/}
+                                {/*    clusters={dataset!.clusters}*/}
+                                {/*    filters={filtersState}*/}
+                                {/*    setClusters={(clusters) =>*/}
+                                {/*        setFiltersState((filters) => ({*/}
+                                {/*            ...filters,*/}
+                                {/*            clusters,*/}
+                                {/*        }))*/}
+                                {/*    }*/}
+                                {/*    toggleCluster={(cluster) => {*/}
+                                {/*        setFiltersState((filters) => ({*/}
+                                {/*            ...filters,*/}
+                                {/*            clusters: filters.clusters[cluster]*/}
+                                {/*                ? omit(filters.clusters, cluster)*/}
+                                {/*                : {...filters.clusters, [cluster]: true},*/}
+                                {/*        }));*/}
+                                {/*    }}*/}
+                                {/*/>*/}
 
                                 <CommandsPanel dataset={dataset!} selectedDate={selectedDate}
                                                selectedEdge={selectedEdge} selectedNode={selectedNode}/>

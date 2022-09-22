@@ -37,13 +37,13 @@ const PieChartController: FC<{  timeLabels: any[], setChartData: (any) => void }
                      'RETURN DISTINCT count(labels(n)), labels(n)'
                 const dataForTime = await database.readQuery(query)
                     .then((result) => {
-                        console.log(result.records)
+                        //console.log(result.records)
                         result.records.forEach((record)=>
                         {
                             datapoints.push(record._fields[0])
                             items.push(record._fields[1]);
-                            console.log(datapoints)
-                            console.log(items)
+                            //console.log(datapoints)
+                            //console.log(items)
                         })
                     })
 

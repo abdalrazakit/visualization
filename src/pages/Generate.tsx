@@ -58,7 +58,7 @@ function Generate() {
 
             var endTime = performance.now()
             var time=endTime - startTime
-            alert('The generating took '+ time+' milliseconds')
+          //  alert('The generating took '+ time+' milliseconds')
         } else if (formData.type == 'Ranges') {
             //alert(Object.entries(formData))
 
@@ -73,7 +73,7 @@ function Generate() {
             await startGenerateToDataBase(numOfDays, keeper, marketPlace, exeManager, nodeExecutor, assetManager, searchEngine, formData.NumOfAdd, formData.NumOfDelete)//, formData.NumOfEdgeAdded,formData.NumOfEdgeDeleted)
             var endTime = performance.now()
             var time=endTime - startTime
-            alert('The generating took '+ time+' milliseconds')
+         //   alert('The generating took '+ time+' milliseconds')
 
         } else if (formData.type == 'Logicly') {
 
@@ -83,8 +83,8 @@ function Generate() {
             let marketPlace = new Item("Marketplace", numOfMarketplace4Keeper);
 
             let exeManager = new Item("ExecutionManager", Math.round(formData.NumOfExecutionManager / formData.NumOfMarketplace));
-            let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor / formData.NumOfExecutionManager));
-            let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfNodeExecutor));
+            let nodeExecutor = new Item('NodeExecutor', Math.round(formData.NumOfNodeExecutor / formData.NumOfMarketplace));
+            let assetManager = new Item('AssetManager', Math.round(formData.NumOfAssetManager / formData.NumOfMarketplace));
             let searchEngine = new Item("SearchEngine", Math.round(formData.NumOfSearchEngine / formData.NumOfKeeper));
             let numOfDays = formData.DaysNumber
             var startTime = performance.now()
@@ -92,7 +92,7 @@ function Generate() {
 
             var endTime = performance.now()
             var time=endTime - startTime
-           alert('The generating took '+ time+' milliseconds')
+         //  alert('The generating took '+ time+' milliseconds')
         } else if (formData.type == 'fromFile') {
 
         }
@@ -121,7 +121,7 @@ function Generate() {
 
             var endTime = performance.now()
             var time=endTime - startTime
-            alert('The generating took '+ time+' milliseconds')
+           // alert('The generating took '+ time+' milliseconds')
              nodesList = lists[0];
             relationsList=lists[1];
 
@@ -139,7 +139,7 @@ function Generate() {
 
             var endTime = performance.now()
             var time=endTime - startTime
-            alert('The generating took '+ time+' milliseconds')
+         //   alert('The generating took '+ time+' milliseconds')
              nodesList = lists[0];
             relationsList=lists[1];
         } else if (formData.type == 'Logicly') {
@@ -159,8 +159,8 @@ function Generate() {
 
             var endTime = performance.now()
             var time=endTime - startTime
-            alert('The generating took '+ time+' milliseconds')
-            console.log(lists)
+           // alert('The generating took '+ time+' milliseconds')
+            //console.log(lists)
             nodesList = lists[0];
             relationsList=lists[1];
         } else if (formData.type == 'fromFile') {

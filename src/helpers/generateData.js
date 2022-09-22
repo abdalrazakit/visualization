@@ -2,7 +2,7 @@ import {v4 as uuidv4} from 'uuid';
 import {driver} from "neo4j-driver";
 import {result} from "lodash";
 
-const deb=true;
+const deb=false;
 const pName= { //the parent type for each node
     'Keeper': null,
     'Marketplace': 'Keeper',
@@ -118,7 +118,7 @@ export class DataBase {
     getDriver() {return this.driver}
     //do a write query
     async writeQuery(query, par) {
-        this.session = this.driver.session();
+        this.session = this.driver.session( {database: 'neo4j'});
         let id=null
         if (par === undefined) {
            id= await this.session.writeTransaction(async txc => {
@@ -137,7 +137,7 @@ export class DataBase {
     }
     //do a read query
     async readQuery(query) {
-        this.session = this.driver.session();
+        this.session = this.driver.session( {database: 'neo4j'});
         let result = await this.session.run(query);
 
         return result;
@@ -253,7 +253,7 @@ export class NodeManagement {
                 }
             }
             //adding Child relation
-            console.log(chType)
+            //console.log(chType)
             if(chType!=null) {
                 //choose random child
                 let pList= await this.getAllNodesIdByTypeDate(chType,date)

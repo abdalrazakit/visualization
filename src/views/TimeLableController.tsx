@@ -30,7 +30,7 @@ const TimeLabelController: FC<{ setTimesLabels: (timeDataSet: any[]) => void, }>
 
                         newArr.sort((first, second) => first - second);
                         setTimesLabels(newArr);
-                        console.log(newArr)
+                       // console.log(newArr)
                     });
 
                 await database.close()

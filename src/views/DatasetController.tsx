@@ -35,7 +35,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
         const graph = sigma.getGraph();
 
         const MAXIMUM_UNIQUE_NODES = 10000
-        const BUFFER_SIZE = 10000
+        const BUFFER_SIZE = 100000
         let uniqueNodes = []
 
 
@@ -174,7 +174,7 @@ const DataSetController: FC<{ timeLabels: any[], filters: FiltersState, setDatas
                                                 endTime: parseInt(value.properties.end)
                                             };
                                              if (edge.endTime != edge.fromTime) {
-                                                 dataset.edges[edge.fromTime][edge.key]= edge;
+                                                     dataset.edges[edge.fromTime][edge.key]= edge;
                                                 if (edge.endTime != 0){
                                                  dataset.edges[edge.endTime][edge.key]= edge;
                                                 }

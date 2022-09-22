@@ -27,7 +27,7 @@ const CommandsPanel: FC<{
     const database= new DataBase();
 
    async function deleteNode() {
-        console.log(dataset )
+       // console.log(dataset )
         if (!selectedNode) return
 
         console.log("delete node")

@@ -15,10 +15,8 @@ const ClustersPanel: FC<{
     filters: FiltersState;
     toggleCluster: (cluster: string) => void;
     setClusters: (clusters: Record<string, boolean>) => void;
-    startTimeLine: ()=>void;
-    stopTimeLine: ()=>void;
 
-}> = ({clusters, filters, toggleCluster, setClusters,startTimeLine,stopTimeLine}) => {
+}> = ({clusters, filters, toggleCluster, setClusters}) => {
     const sigma = useSigma();
     const graph = sigma.getGraph();
 
